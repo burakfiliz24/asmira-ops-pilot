@@ -140,6 +140,7 @@ function ContextMenu({
 type SupplyOperation = {
   id: string;
   vesselName: string;
+  imoNumber?: string;
   quantity: number;
   unit: Unit;
   loadingPlace?: string;
@@ -289,6 +290,7 @@ export default function DashboardPage() {
     {
       id: "op_seed_1",
       vesselName: "M/T Asmira Star",
+      imoNumber: "9361354",
       quantity: 850,
       unit: "MT",
       port: "İzmit",
@@ -301,6 +303,7 @@ export default function DashboardPage() {
     {
       id: "op_seed_2",
       vesselName: "M/V Bosphorus",
+      imoNumber: "9284765",
       quantity: 420.5,
       unit: "MT",
       port: "Ambarlı",
@@ -314,6 +317,7 @@ export default function DashboardPage() {
 
   const [form, setForm] = useState({
     vesselName: "",
+    imoNumber: "",
     quantity: "",
     unit: "MT" as Unit,
     loadingPlace: "",
@@ -503,6 +507,7 @@ export default function DashboardPage() {
     setForm((prev) => ({
       ...prev,
       vesselName: "",
+      imoNumber: "",
       quantity: "",
       unit: "MT",
       loadingPlace: "",
@@ -563,6 +568,7 @@ export default function DashboardPage() {
     const op: SupplyOperation = {
       id: nextId(),
       vesselName,
+      imoNumber: form.imoNumber.trim() || undefined,
       quantity: qty,
       unit: form.unit,
       loadingPlace,
@@ -841,16 +847,30 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4 px-5 py-4">
-              <div className="grid gap-2">
-                <label className="text-xs font-semibold text-white/70">Gemi Adı</label>
-                <input
-                  value={form.vesselName}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, vesselName: e.target.value }))
-                  }
-                  className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-white/25"
-                  placeholder="Örn: M/T Asmira Star"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-2">
+                  <label className="text-xs font-semibold text-white/70">Gemi Adı</label>
+                  <input
+                    value={form.vesselName}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, vesselName: e.target.value }))
+                    }
+                    className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-white/25"
+                    placeholder="Örn: M/T Asmira Star"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-xs font-semibold text-white/70">IMO Numarası</label>
+                  <input
+                    value={form.imoNumber}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, imoNumber: e.target.value }))
+                    }
+                    className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-white/25"
+                    placeholder="Örn: 9361354"
+                    inputMode="numeric"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-3">

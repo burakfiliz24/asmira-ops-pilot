@@ -1,67 +1,46 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   Navigation,
   Ship,
-  Anchor,
   MapPin,
   Clock,
-  Plus,
-  X,
   Search,
-  Filter,
+  ExternalLink,
+  Fuel,
+  Plus,
 } from "lucide-react";
-import { VesselMap, turkishPorts, type VesselPosition } from "@/components/maps/VesselMap";
+import { VesselMap, type VesselPosition } from "@/components/maps/VesselMap";
 import { cn } from "@/lib/utils/cn";
+import { useOperationStore } from "@/store/operationStore";
 
-// Demo gemi verileri
-const demoVessels: VesselPosition[] = [
-  {
-    id: "v1",
-    name: "M/T ASMIRA STAR",
-    lat: 40.7667,
-    lon: 29.9167,
-    status: "moored",
-    port: "İzmit",
-    destination: "İzmit Körfezi",
-    eta: "Yanaşık",
-    speed: 0,
-  },
-  {
-    id: "v2",
-    name: "M/V BOSPHORUS",
-    lat: 40.95,
-    lon: 28.75,
-    status: "anchored",
-    port: "Ambarlı",
-    destination: "Ambarlı Limanı",
-    eta: "14:30",
-    speed: 0,
-  },
-  {
-    id: "v3",
-    name: "M/T AEGEAN SEA",
-    lat: 38.5,
-    lon: 26.5,
-    status: "underway",
-    destination: "Aliağa",
-    eta: "18:00",
-    speed: 12.5,
-    course: 45,
-  },
-  {
-    id: "v4",
-    name: "M/V MARMARA QUEEN",
-    lat: 40.85,
-    lon: 29.3,
-    status: "underway",
-    destination: "İzmit",
-    eta: "16:45",
-    speed: 8.2,
-    course: 90,
-  },
-];
+// Liman koordinatları
+const portCoordinates: Record<string, { lat: number; lon: number }> = {
+  "izmit": { lat: 40.7667, lon: 29.9167 },
+  "İzmit": { lat: 40.7667, lon: 29.9167 },
+  "ambarlı": { lat: 40.9833, lon: 28.6833 },
+  "Ambarlı": { lat: 40.9833, lon: 28.6833 },
+  "aliağa": { lat: 38.7833, lon: 26.9667 },
+  "Aliağa": { lat: 38.7833, lon: 26.9667 },
+  "mersin": { lat: 36.7833, lon: 34.6333 },
+  "Mersin": { lat: 36.7833, lon: 34.6333 },
+  "iskenderun": { lat: 36.5833, lon: 36.1667 },
+  "İskenderun": { lat: 36.5833, lon: 36.1667 },
+  "gemlik": { lat: 40.4333, lon: 29.1500 },
+  "Gemlik": { lat: 40.4333, lon: 29.1500 },
+  "bandırma": { lat: 40.3500, lon: 27.9667 },
+  "Bandırma": { lat: 40.3500, lon: 27.9667 },
+  "samsun": { lat: 41.2833, lon: 36.3333 },
+  "Samsun": { lat: 41.2833, lon: 36.3333 },
+  "trabzon": { lat: 41.0000, lon: 39.7167 },
+  "Trabzon": { lat: 41.0000, lon: 39.7167 },
+  "antalya": { lat: 36.8333, lon: 30.6167 },
+  "Antalya": { lat: 36.8333, lon: 30.6167 },
+  "izmir": { lat: 38.4397, lon: 27.1397 },
+  "İzmir": { lat: 38.4397, lon: 27.1397 },
+};
 
 const statusConfig = {
   moored: { label: "Yanaşık", color: "bg-emerald-500", textColor: "text-emerald-400" },
@@ -70,20 +49,46 @@ const statusConfig = {
   unknown: { label: "Bilinmiyor", color: "bg-gray-500", textColor: "text-gray-400" },
 };
 
+// Operation status to vessel status mapping
+const opStatusToVesselStatus: Record<string, VesselPosition["status"]> = {
+  planned: "underway",
+  approaching: "underway",
+  active: "moored",
+  completed: "moored",
+  cancelled: "unknown",
+};
+
+type VesselWithIMO = VesselPosition & { imoNumber?: string };
+
 export default function VesselTrackingPage() {
-  const [vessels, setVessels] = useState<VesselPosition[]>(demoVessels);
-  const [selectedVessel, setSelectedVessel] = useState<VesselPosition | null>(null);
+  const { operations } = useOperationStore();
+  const [selectedVessel, setSelectedVessel] = useState<VesselWithIMO | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newVessel, setNewVessel] = useState({
-    name: "",
-    lat: "",
-    lon: "",
-    status: "unknown" as VesselPosition["status"],
-    destination: "",
-    eta: "",
-  });
+
+  // Dashboard operasyonlarından gemi listesi oluştur
+  const vessels = useMemo((): VesselWithIMO[] => {
+    return operations.map((op) => {
+      const portCoord = portCoordinates[op.port] || { lat: 40.0, lon: 29.0 };
+      // Küçük rastgele offset ekle (aynı limandaki gemiler üst üste binmesin)
+      const offset = {
+        lat: (Math.random() - 0.5) * 0.1,
+        lon: (Math.random() - 0.5) * 0.1,
+      };
+      
+      return {
+        id: op.id,
+        name: op.vesselName.toUpperCase(),
+        lat: portCoord.lat + offset.lat,
+        lon: portCoord.lon + offset.lon,
+        status: opStatusToVesselStatus[op.status] || "unknown",
+        port: op.port,
+        destination: op.port,
+        eta: op.date,
+        imoNumber: op.imoNumber,
+      };
+    });
+  }, [operations]);
 
   const filteredVessels = useMemo(() => {
     return vessels.filter((v) => {
@@ -102,41 +107,16 @@ export default function VesselTrackingPage() {
     };
   }, [vessels]);
 
-  function handleAddVessel() {
-    if (!newVessel.name.trim() || !newVessel.lat || !newVessel.lon) {
-      alert("Lütfen gemi adı ve koordinatları girin.");
-      return;
+  function getVesselTrackingUrl(vesselName: string, imoNumber?: string) {
+    if (imoNumber) {
+      return `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(imoNumber)}`;
     }
-
-    const vessel: VesselPosition = {
-      id: `v_${Date.now()}`,
-      name: newVessel.name.toUpperCase(),
-      lat: parseFloat(newVessel.lat),
-      lon: parseFloat(newVessel.lon),
-      status: newVessel.status,
-      destination: newVessel.destination || undefined,
-      eta: newVessel.eta || undefined,
-    };
-
-    setVessels((prev) => [...prev, vessel]);
-    setShowAddModal(false);
-    setNewVessel({
-      name: "",
-      lat: "",
-      lon: "",
-      status: "unknown",
-      destination: "",
-      eta: "",
-    });
-  }
-
-  function handleDeleteVessel(id: string) {
-    if (confirm("Bu gemiyi silmek istediğinize emin misiniz?")) {
-      setVessels((prev) => prev.filter((v) => v.id !== id));
-      if (selectedVessel?.id === id) {
-        setSelectedVessel(null);
-      }
-    }
+    const cleanName = vesselName
+      .replace(/^M\/[TVS]\s*/i, "")
+      .replace(/^MT\s*/i, "")
+      .replace(/^MV\s*/i, "")
+      .trim();
+    return `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(cleanName)}`;
   }
 
   return (
@@ -150,17 +130,17 @@ export default function VesselTrackingPage() {
             <div className="text-sm font-light tracking-[0.2em] text-slate-400">
               GEMİ TAKİP
             </div>
-            <div className="text-3xl font-black tracking-tight">Canlı Harita</div>
+            <div className="text-3xl font-black tracking-tight">Dashboard Gemileri</div>
+            <div className="text-xs text-white/50 mt-1">Dashboard'a eklenen operasyonlardaki gemiler burada görünür</div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowAddModal(true)}
+          <Link
+            href="/dashboard"
             className="inline-flex h-10 items-center gap-2 rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 px-5 text-[13px] font-semibold text-white shadow-[0_2px_10px_rgba(59,130,246,0.25)] transition-all hover:from-blue-500 hover:to-blue-600"
           >
             <Plus className="h-4 w-4" />
-            Gemi Ekle
-          </button>
+            İkmal Ekle
+          </Link>
         </div>
 
         {/* Stats & Filters */}
@@ -264,16 +244,16 @@ export default function VesselTrackingPage() {
                           </span>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteVessel(vessel.id);
-                        }}
-                        className="rounded p-1 text-red-400 opacity-0 transition hover:bg-red-500/20 group-hover:opacity-100"
+                      <a
+                        href={getVesselTrackingUrl(vessel.name, vessel.imoNumber)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="rounded p-1 text-cyan-400 opacity-0 transition hover:bg-cyan-500/20 group-hover:opacity-100"
+                        title="VesselFinder'da Aç"
                       >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
                     </div>
 
                     {vessel.destination && (
@@ -310,135 +290,6 @@ export default function VesselTrackingPage() {
           </div>
         </div>
       </div>
-
-      {/* Add Vessel Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setShowAddModal(false)}
-            aria-label="Kapat"
-          />
-          <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#0B1220] p-6 text-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
-            <div className="mb-6 flex items-center justify-between">
-              <h3 className="text-xl font-semibold">Yeni Gemi Ekle</h3>
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50 hover:bg-white/10 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">
-                  Gemi Adı <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={newVessel.name}
-                  onChange={(e) => setNewVessel({ ...newVessel, name: e.target.value })}
-                  placeholder="Örn: M/T ASMIRA"
-                  className="h-11 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm outline-none placeholder:text-white/30 focus:border-blue-500/50"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-white/70">
-                    Enlem (Lat) <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={newVessel.lat}
-                    onChange={(e) => setNewVessel({ ...newVessel, lat: e.target.value })}
-                    placeholder="40.7667"
-                    className="h-11 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm outline-none placeholder:text-white/30 focus:border-blue-500/50"
-                  />
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-white/70">
-                    Boylam (Lon) <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    step="0.0001"
-                    value={newVessel.lon}
-                    onChange={(e) => setNewVessel({ ...newVessel, lon: e.target.value })}
-                    placeholder="29.9167"
-                    className="h-11 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm outline-none placeholder:text-white/30 focus:border-blue-500/50"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">Durum</label>
-                <select
-                  value={newVessel.status}
-                  onChange={(e) =>
-                    setNewVessel({ ...newVessel, status: e.target.value as VesselPosition["status"] })
-                  }
-                  className="h-11 w-full rounded-lg border border-white/10 bg-[#0B1220] px-4 text-sm outline-none focus:border-blue-500/50"
-                >
-                  <option value="unknown">Bilinmiyor</option>
-                  <option value="moored">Yanaşık</option>
-                  <option value="anchored">Demirde</option>
-                  <option value="underway">Seyirde</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">Varış Noktası</label>
-                <select
-                  value={newVessel.destination}
-                  onChange={(e) => setNewVessel({ ...newVessel, destination: e.target.value })}
-                  className="h-11 w-full rounded-lg border border-white/10 bg-[#0B1220] px-4 text-sm outline-none focus:border-blue-500/50"
-                >
-                  <option value="">Seçiniz...</option>
-                  {turkishPorts.map((port) => (
-                    <option key={port.id} value={port.name}>
-                      {port.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">ETA</label>
-                <input
-                  type="text"
-                  value={newVessel.eta}
-                  onChange={(e) => setNewVessel({ ...newVessel, eta: e.target.value })}
-                  placeholder="Örn: 14:30 veya Yanaşık"
-                  className="h-11 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-sm outline-none placeholder:text-white/30 focus:border-blue-500/50"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowAddModal(false)}
-                className="rounded-lg px-4 py-2.5 text-sm font-medium text-white/60 transition hover:bg-white/10 hover:text-white"
-              >
-                Vazgeç
-              </button>
-              <button
-                type="button"
-                onClick={handleAddVessel}
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
-              >
-                <Plus className="h-4 w-4" />
-                Gemi Ekle
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
