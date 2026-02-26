@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  --background: #060B14;
+  --foreground: #F5F7FB;
+  --muted: #0B1F3B;
+  --border: #1A2B4A;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Sidebar wave animations */
+@keyframes sidebar-wave-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.sidebar-wave-1 {
+  animation: sidebar-wave-drift 8s linear infinite;
+}
+.sidebar-wave-2 {
+  animation: sidebar-wave-drift 12s linear infinite reverse;
+}
+.sidebar-wave-3 {
+  animation: sidebar-wave-drift 6s linear infinite;
+}
+
+/* Ships sailing across */
+@keyframes ship-sail-right {
+  0% { left: -15%; }
+  100% { left: 110%; }
+}
+@keyframes ship-sail-left {
+  0% { right: -15%; left: auto; }
+  100% { right: 110%; left: auto; }
+}
+.sidebar-ship-1 {
+  animation: ship-sail-right 20s linear infinite;
+}
+.sidebar-ship-2 {
+  animation: ship-sail-left 28s linear infinite;
+}
+
+/* Ship bobbing on waves */
+@keyframes ship-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-2px) rotate(1.5deg); }
+  50% { transform: translateY(1px) rotate(-0.5deg); }
+  75% { transform: translateY(-1px) rotate(1deg); }
+}
+.ship-bob {
+  animation: ship-bob 3s ease-in-out infinite, ship-sail-right 20s linear infinite;
+}
+.ship-bob-2 {
+  animation: ship-bob 4s ease-in-out infinite 0.5s, ship-sail-left 28s linear infinite;
+}
+
+/* Sidebar menu item staggered entrance */
+@keyframes sidebar-item-fade-in {
+  0% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.sidebar-item-enter {
+  animation: sidebar-item-fade-in 0.4s ease-out both;
+}
+
+/* Custom scrollbar for calendar cells */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Dark theme select/dropdown styling */
+select {
+  background-color: #0B1220 !important;
+  color: white;
+}
+
+select option {
+  background-color: #0B1220;
+  color: white;
+  padding: 8px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+  background-color: #1a2744;
+  color: white;
+}
