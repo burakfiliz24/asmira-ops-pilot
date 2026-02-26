@@ -26,10 +26,7 @@ import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
 import { DocumentExpiryAlert } from "@/components/ui/DocumentExpiryAlert";
 import { useRealtime } from "@/contexts/RealtimeContext";
-
-type Unit = "MT" | "L";
-
-type OperationStatus = "planned" | "approaching" | "active" | "completed" | "cancelled";
+import { useOperationStore, type SupplyOperation, type Unit, type OperationStatus } from "@/store/operationStore";
 
 type ContextMenuState = {
   visible: boolean;
@@ -136,21 +133,6 @@ function ContextMenu({
     </div>
   );
 }
-
-type SupplyOperation = {
-  id: string;
-  vesselName: string;
-  imoNumber?: string;
-  quantity: number;
-  unit: Unit;
-  loadingPlace?: string;
-  port: string;
-  date: string; // YYYY-MM-DD
-  status: OperationStatus;
-  driverName: string;
-  driverPhone: string;
-  agentNote: string;
-};
 
 const monthNamesTr = [
   "OCAK",
@@ -283,37 +265,11 @@ export default function DashboardPage() {
   const [realtimeConnected, setRealtimeConnected] = useState(false);
 
   const { broadcast, subscribe } = useRealtime();
+  
+  // Zustand store - kalıcı veri
+  const { operations, setOperations, addOperation, updateOperation, deleteOperation: deleteOp } = useOperationStore();
 
   const currentMonth = useMemo(() => new Date(baseYear, monthIndex, 1), [baseYear, monthIndex]);
-
-  const [operations, setOperations] = useState<SupplyOperation[]>([
-    {
-      id: "op_seed_1",
-      vesselName: "M/T Asmira Star",
-      imoNumber: "9361354",
-      quantity: 850,
-      unit: "MT",
-      port: "İzmit",
-      date: "2026-01-29",
-      status: "active",
-      driverName: "Mehmet Yılmaz",
-      driverPhone: "+90 5xx xxx xx xx",
-      agentNote: "Pilotaj teyidi bekleniyor. ETA 09:30.",
-    },
-    {
-      id: "op_seed_2",
-      vesselName: "M/V Bosphorus",
-      imoNumber: "9284765",
-      quantity: 420.5,
-      unit: "MT",
-      port: "Ambarlı",
-      date: "2026-01-28",
-      status: "planned",
-      driverName: "Ahmet Kaya",
-      driverPhone: "+90 5xx xxx xx xx",
-      agentNote: "Terminal slot: 14:00-16:00.",
-    },
-  ]);
 
   const [form, setForm] = useState({
     vesselName: "",
@@ -343,23 +299,17 @@ export default function DashboardPage() {
 
       switch (action) {
         case "insert":
-          setOperations((prev) => {
-            const newOp = payload as SupplyOperation;
-            if (prev.some((op) => op.id === newOp.id)) return prev;
-            return [newOp, ...prev];
-          });
+          const newOp = payload as SupplyOperation;
+          if (!operations.some((op) => op.id === newOp.id)) {
+            addOperation(newOp);
+          }
           break;
         case "update":
-          setOperations((prev) =>
-            prev.map((op) =>
-              op.id === (payload as SupplyOperation).id ? (payload as SupplyOperation) : op
-            )
-          );
+          const updatedOp = payload as SupplyOperation;
+          updateOperation(updatedOp.id, updatedOp);
           break;
         case "delete":
-          setOperations((prev) =>
-            prev.filter((op) => op.id !== (payload as { id: string }).id)
-          );
+          deleteOp((payload as { id: string }).id);
           break;
       }
     });
@@ -368,7 +318,7 @@ export default function DashboardPage() {
       unsubscribe();
       setRealtimeConnected(false);
     };
-  }, [subscribe]);
+  }, [subscribe, operations, addOperation, updateOperation, deleteOp]);
 
   const effectiveOperations = useMemo(
     () => pendingOperations ?? operations,
@@ -471,37 +421,19 @@ export default function DashboardPage() {
   }, []);
 
   const handleStatusChange = useCallback((operationId: string, status: OperationStatus) => {
-    const updater = (prev: SupplyOperation[]) =>
-      prev.map((op) => (op.id === operationId ? { ...op, status } : op));
-    
-    let updatedOp: SupplyOperation | undefined;
-    
     if (pendingOperations) {
-      setPendingOperations((prev) => {
-        const updated = updater(prev ?? []);
-        updatedOp = updated.find((op) => op.id === operationId);
-        return updated;
-      });
+      setPendingOperations((prev) =>
+        (prev ?? []).map((op) => (op.id === operationId ? { ...op, status } : op))
+      );
     } else {
-      setOperations((prev) => {
-        const updated = updater(prev);
-        updatedOp = updated.find((op) => op.id === operationId);
-        return updated;
-      });
+      updateOperation(operationId, { status });
     }
     
+    const updatedOp = operations.find((op) => op.id === operationId);
     if (updatedOp) {
-      broadcast("operation_update", updatedOp);
+      broadcast("operation_update", { ...updatedOp, status });
     }
-  }, [pendingOperations, broadcast]);
-
-  function setEffectiveOps(updater: (prev: SupplyOperation[]) => SupplyOperation[]) {
-    if (pendingOperations) {
-      setPendingOperations((prev) => updater(prev ?? []));
-      return;
-    }
-    setOperations((prev) => updater(prev));
-  }
+  }, [pendingOperations, broadcast, operations, updateOperation]);
 
   function openModal(presetDate?: string) {
     setForm((prev) => ({
@@ -517,10 +449,14 @@ export default function DashboardPage() {
     setOpen(true);
   }
 
-  function deleteOperation(id: string) {
+  function handleDeleteOperation(id: string) {
     const ok = window.confirm("Bu ikmali silmek istediğinize emin misiniz?");
     if (!ok) return;
-    setEffectiveOps((prev) => prev.filter((x) => x.id !== id));
+    if (pendingOperations) {
+      setPendingOperations((prev) => (prev ?? []).filter((x) => x.id !== id));
+    } else {
+      deleteOp(id);
+    }
     broadcast("operation_delete", { id });
   }
 
@@ -580,7 +516,11 @@ export default function DashboardPage() {
       agentNote: "",
     };
 
-    setEffectiveOps((prev) => [op, ...prev]);
+    if (pendingOperations) {
+      setPendingOperations((prev) => [op, ...(prev ?? [])]);
+    } else {
+      addOperation(op);
+    }
     broadcast("operation_insert", op);
     setOpen(false);
   }
@@ -794,7 +734,7 @@ export default function DashboardPage() {
                         <OperationCard
                           key={op.id}
                           op={op}
-                          onDelete={deleteOperation}
+                          onDelete={handleDeleteOperation}
                           onDragStart={handleDragStart}
                           onDragEnd={handleDragEnd}
                           onContextMenu={handleContextMenu}
