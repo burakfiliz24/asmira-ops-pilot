@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Types
 export type VehicleDocumentType = 
@@ -258,7 +259,14 @@ interface DocumentStore {
   getAllDrivers: () => Driver[];
 }
 
-export const useDocumentStore = create<DocumentStore>((set, get) => ({
+// Persist için doküman listesinden Blob/URL'leri temizle
+function stripBlobsFromDocs(docs: DocumentInfo[]): DocumentInfo[] {
+  return docs.map((d) => ({ ...d, fileBlob: null, fileUrl: null }));
+}
+
+export const useDocumentStore = create<DocumentStore>()(
+  persist(
+    (set, get) => ({
   // State
   trucks: initialTrucks,
   trailers: initialTrailers,
@@ -384,7 +392,15 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
   
   deleteTrailerDocument: (trailerId, docType) => {
     set((state) => ({
-      trailers: state.trailers.filter((t) => t.id !== trailerId),
+      trailers: state.trailers.map((t) => {
+        if (t.id !== trailerId) return t;
+        return {
+          ...t,
+          documents: t.documents.map((d) =>
+            d.type === docType ? { ...d, fileName: null, fileUrl: null, fileBlob: null, expiryDate: null } : d
+          ),
+        };
+      }),
     }));
   },
   
@@ -646,4 +662,15 @@ export const useDocumentStore = create<DocumentStore>((set, get) => ({
       }));
     }
   },
-}));
+    }),
+    {
+      name: "asmira-documents",
+      partialize: (state) => ({
+        trucks: state.trucks.map((t) => ({ ...t, documents: stripBlobsFromDocs(t.documents) })),
+        trailers: state.trailers.map((t) => ({ ...t, documents: stripBlobsFromDocs(t.documents) })),
+        vehicleSets: state.vehicleSets,
+        drivers: state.drivers.map((d) => ({ ...d, documents: stripBlobsFromDocs(d.documents) })),
+      }),
+    }
+  )
+);

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { LayoutDashboard, Truck, FileText, BookOpen, Settings, UserCheck, PackageCheck, Navigation } from "lucide-react";
+import { LayoutDashboard, Truck, FileText, BookOpen, Settings, UserCheck, PackageCheck, BarChart3 } from "lucide-react";
 
 export type NavItem = {
   title: string;
@@ -18,7 +18,6 @@ export const navSections: NavSection[] = [
     title: "Ana Menü",
     items: [
       { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { title: "Gemi Takip", href: "/vessel-tracking", icon: Navigation },
       {
         title: "Araç Evrakları",
         href: "/vehicle-documents",
@@ -31,6 +30,7 @@ export const navSections: NavSection[] = [
       { title: "Şoför Evrakları", href: "/driver-documents", icon: UserCheck },
       { title: "Evrak Paketi", href: "/document-package", icon: PackageCheck },
       { title: "Dilekçeler", href: "/petitions", icon: FileText },
+      { title: "Raporlar", href: "/reports", icon: BarChart3 },
       { title: "Port Wiki", href: "/port-wiki", icon: BookOpen },
       { title: "Ayarlar", href: "/settings", icon: Settings },
     ],
