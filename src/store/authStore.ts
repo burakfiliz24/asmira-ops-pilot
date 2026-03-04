@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { usersApi } from "@/lib/api/client";
 
 export interface User {
   id: string;
@@ -18,6 +19,7 @@ interface AuthState {
   addUser: (user: Omit<User, "id">) => void;
   updateUser: (id: string, updates: Partial<Omit<User, "id">>) => void;
   deleteUser: (id: string) => boolean;
+  syncFromServer: () => Promise<void>;
 }
 
 const DEFAULT_USERS: User[] = [
@@ -70,6 +72,8 @@ export const useAuthStore = create<AuthState>()(
         set((state) => ({
           users: [...state.users, newUser],
         }));
+        usersApi.create(userData as { username: string; password: string; name: string; role: string })
+          .catch((e) => console.warn("[Sync] addUser failed:", e));
       },
 
       updateUser: (id, updates) => {
@@ -77,16 +81,16 @@ export const useAuthStore = create<AuthState>()(
           users: state.users.map((u) =>
             u.id === id ? { ...u, ...updates } : u
           ),
-          // If updating current user, update the session too
           user: state.user?.id === id
             ? { ...state.user, ...updates, id }
             : state.user,
         }));
+        usersApi.update(id, updates as Record<string, unknown>)
+          .catch((e) => console.warn("[Sync] updateUser failed:", e));
       },
 
       deleteUser: (id) => {
         const { users, user } = get();
-        // Can't delete the last admin
         const admins = users.filter((u) => u.role === "admin");
         const userToDelete = users.find((u) => u.id === id);
         
@@ -94,7 +98,6 @@ export const useAuthStore = create<AuthState>()(
           return false;
         }
         
-        // Can't delete yourself
         if (user?.id === id) {
           return false;
         }
@@ -102,7 +105,19 @@ export const useAuthStore = create<AuthState>()(
         set((state) => ({
           users: state.users.filter((u) => u.id !== id),
         }));
+        usersApi.delete(id).catch((e) => console.warn("[Sync] deleteUser failed:", e));
         return true;
+      },
+
+      syncFromServer: async () => {
+        try {
+          const serverUsers = await usersApi.getAll() as User[];
+          if (serverUsers.length > 0) {
+            set({ users: serverUsers });
+          }
+        } catch (e) {
+          console.warn("[Sync] syncUsers failed, using local data:", e);
+        }
       },
     }),
     {

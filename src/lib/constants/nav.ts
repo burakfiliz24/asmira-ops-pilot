@@ -30,7 +30,15 @@ export const navSections: NavSection[] = [
       { title: "Şoför Evrakları", href: "/driver-documents", icon: UserCheck },
       { title: "Evrak Paketi", href: "/document-package", icon: PackageCheck },
       { title: "Dilekçeler", href: "/petitions", icon: FileText },
-      { title: "Raporlar", href: "/reports", icon: BarChart3 },
+      {
+        title: "Raporlar",
+        href: "/reports",
+        icon: BarChart3,
+        children: [
+          { title: "Evrak Takibi", href: "/reports/document-tracking" },
+          { title: "İkmaller", href: "/reports/operations" },
+        ],
+      },
       { title: "Port Wiki", href: "/port-wiki", icon: BookOpen },
       { title: "Ayarlar", href: "/settings", icon: Settings },
     ],

@@ -27,43 +27,96 @@ body {
   100% { transform: translateX(-50%); }
 }
 .sidebar-wave-1 {
-  animation: sidebar-wave-drift 8s linear infinite;
+  animation: sidebar-wave-drift 7s linear infinite;
 }
 .sidebar-wave-2 {
-  animation: sidebar-wave-drift 12s linear infinite reverse;
+  animation: sidebar-wave-drift 11s linear infinite reverse;
 }
 .sidebar-wave-3 {
-  animation: sidebar-wave-drift 6s linear infinite;
+  animation: sidebar-wave-drift 5s linear infinite;
 }
 
 /* Ships sailing across */
 @keyframes ship-sail-right {
-  0% { left: -15%; }
+  0% { left: -20%; }
   100% { left: 110%; }
 }
 @keyframes ship-sail-left {
-  0% { right: -15%; left: auto; }
+  0% { right: -20%; left: auto; }
   100% { right: 110%; left: auto; }
 }
-.sidebar-ship-1 {
-  animation: ship-sail-right 20s linear infinite;
+
+/* Realistic ship bobbing - pitch + heave + slight roll */
+@keyframes ship-bob-realistic {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  10%  { transform: translateY(-1.5px) rotate(0.8deg); }
+  20%  { transform: translateY(-2.5px) rotate(1.5deg); }
+  30%  { transform: translateY(-1px) rotate(0.5deg); }
+  40%  { transform: translateY(1px) rotate(-0.8deg); }
+  50%  { transform: translateY(2px) rotate(-1.2deg); }
+  60%  { transform: translateY(1.5px) rotate(-0.5deg); }
+  70%  { transform: translateY(-0.5px) rotate(0.3deg); }
+  80%  { transform: translateY(-2px) rotate(1deg); }
+  90%  { transform: translateY(0.5px) rotate(-0.3deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
 }
-.sidebar-ship-2 {
-  animation: ship-sail-left 28s linear infinite;
+@keyframes ship-bob-realistic-2 {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  12%  { transform: translateY(1px) rotate(-0.6deg); }
+  24%  { transform: translateY(2px) rotate(-1deg); }
+  36%  { transform: translateY(0.5px) rotate(-0.3deg); }
+  48%  { transform: translateY(-1.5px) rotate(0.7deg); }
+  60%  { transform: translateY(-2px) rotate(1.2deg); }
+  72%  { transform: translateY(-0.5px) rotate(0.4deg); }
+  84%  { transform: translateY(1.5px) rotate(-0.5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
 }
 
-/* Ship bobbing on waves */
-@keyframes ship-bob {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  25% { transform: translateY(-2px) rotate(1.5deg); }
-  50% { transform: translateY(1px) rotate(-0.5deg); }
-  75% { transform: translateY(-1px) rotate(1deg); }
-}
 .ship-bob {
-  animation: ship-bob 3s ease-in-out infinite, ship-sail-right 20s linear infinite;
+  animation: ship-bob-realistic 4.5s ease-in-out infinite, ship-sail-right 24s linear infinite;
 }
 .ship-bob-2 {
-  animation: ship-bob 4s ease-in-out infinite 0.5s, ship-sail-left 28s linear infinite;
+  animation: ship-bob-realistic-2 5.5s ease-in-out infinite 1s, ship-sail-left 32s linear infinite;
+}
+
+/* Ship smoke/exhaust */
+@keyframes smoke-rise {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.4; }
+  30%  { transform: translateY(-4px) translateX(1px) scale(1.3); opacity: 0.25; }
+  60%  { transform: translateY(-8px) translateX(3px) scale(1.6); opacity: 0.12; }
+  100% { transform: translateY(-12px) translateX(5px) scale(2); opacity: 0; }
+}
+.ship-smoke {
+  animation: smoke-rise 2.5s ease-out infinite;
+}
+.ship-smoke-2 {
+  animation: smoke-rise 3s ease-out infinite 0.8s;
+}
+.ship-smoke-3 {
+  animation: smoke-rise 2s ease-out infinite 1.5s;
+}
+
+/* Ship wake trail */
+@keyframes wake-shimmer {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.3; }
+}
+.ship-wake {
+  animation: wake-shimmer 2s ease-in-out infinite;
+}
+
+/* Ship window lights flicker */
+@keyframes window-flicker {
+  0%, 90%, 100% { opacity: 1; }
+  92% { opacity: 0.4; }
+  94% { opacity: 1; }
+  96% { opacity: 0.6; }
+}
+.ship-window {
+  animation: window-flicker 6s ease-in-out infinite;
+}
+.ship-window-2 {
+  animation: window-flicker 6s ease-in-out infinite 2s;
 }
 
 /* Sidebar menu item staggered entrance */

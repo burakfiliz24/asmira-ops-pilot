@@ -1,7 +1,7 @@
 "use client";
 
-import { Plus, FolderOpen, Download, X, Upload, Eye, Trash2, CheckCircle, AlertTriangle, UserCheck, Edit3 } from "lucide-react";
-import { useState, useRef } from "react";
+import { Plus, FolderOpen, Download, X, Upload, Eye, Trash2, CheckCircle, AlertTriangle, UserCheck, Edit3, Search } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
 import { PDFDocument } from "pdf-lib";
 import { saveAs } from "file-saver";
 import { cn } from "@/lib/utils/cn";
@@ -34,6 +34,7 @@ export default function DriverDocumentsPage() {
   const [newName, setNewName] = useState("");
   const [newTcNo, setNewTcNo] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Geçici evrak değişiklikleri - kaydet butonuna basılana kadar store'a yazılmaz
   const [pendingChanges, setPendingChanges] = useState<{
@@ -46,6 +47,18 @@ export default function DriverDocumentsPage() {
   
   // Bekleyen değişiklik var mı?
   const hasPendingChanges = pendingChanges.uploads.length > 0 || pendingChanges.expiryDates.length > 0 || pendingChanges.deletions.length > 0;
+
+  // Filtrelenmiş şoförler
+  const filteredDrivers = useMemo(() => {
+    if (!searchQuery.trim()) return drivers;
+    const q = searchQuery.toLowerCase();
+    return drivers.filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.tcNo.includes(q) ||
+        d.phone.includes(q)
+    );
+  }, [drivers, searchQuery]);
 
   function startEdit(driver: Driver) {
     setEditingId(driver.id);
@@ -249,9 +262,20 @@ export default function DriverDocumentsPage() {
           </button>
         </div>
 
-        {/* Stats Bar */}
-        <div className="relative flex flex-none items-center gap-3 px-6 py-2.5">
+        {/* Search Bar */}
+        <div className="relative flex flex-none items-center gap-3 px-6 py-3">
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-purple-500/40 via-purple-400/20 to-transparent" />
+          
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Şoför adı, TC veya telefon ara..."
+              className="h-11 w-full rounded-xl border border-cyan-500/30 bg-slate-900/80 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all"
+            />
+          </div>
           
           <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 backdrop-blur-md">
             <div className="h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(147,51,234,0.6)]" />
@@ -263,7 +287,7 @@ export default function DriverDocumentsPage() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {drivers.map((driver) => {
+            {filteredDrivers.map((driver) => {
               const uploaded = countUploaded(driver.documents);
               const total = driver.documents.length;
               const isComplete = uploaded === total;

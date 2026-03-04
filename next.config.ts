@@ -4,6 +4,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+
+  // Native modüller için (better-sqlite3)
+  serverExternalPackages: ["better-sqlite3"],
   
   // Production optimizations
   poweredByHeader: false,

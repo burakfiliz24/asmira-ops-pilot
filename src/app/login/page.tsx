@@ -263,10 +263,10 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="px-6 lg:px-10 pb-4 lg:pb-8 text-center">
             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4 lg:mb-6" />
-            <p className="text-xs text-white/25">
-              Asmira Denizcilik Operasyon Yönetim Sistemi
+            <p className="text-xs text-white">
+              Asmira Lojistik Operasyon Yönetim Sistemi
             </p>
-            <p className="text-[10px] text-white/15 mt-1">
+            <p className="text-[10px] text-white/60 mt-1">
               v1.0.0 • © 2026
             </p>
           </div>

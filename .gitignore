@@ -43,4 +43,7 @@ next-env.d.ts
 # Local Netlify folder
 .netlify
 
+# Database & uploads (sunucu verileri)
+/data/
+
 .vercel

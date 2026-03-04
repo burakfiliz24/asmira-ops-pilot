@@ -17,6 +17,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Pencil,
   Wifi,
   WifiOff,
   MapPin,
@@ -26,7 +27,7 @@ import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
 import { DocumentExpiryAlert } from "@/components/ui/DocumentExpiryAlert";
 import { useRealtime } from "@/contexts/RealtimeContext";
-import { useOperationStore, type SupplyOperation, type Unit, type OperationStatus } from "@/store/operationStore";
+import { useOperationStore, type SupplyOperation, type Unit, type OperationStatus, type VesselType } from "@/store/operationStore";
 
 type ContextMenuState = {
   visible: boolean;
@@ -67,10 +68,12 @@ function ContextMenu({
   state,
   onClose,
   onStatusChange,
+  onEdit,
 }: {
   state: ContextMenuState;
   onClose: () => void;
   onStatusChange: (operationId: string, status: OperationStatus) => void;
+  onEdit: (operationId: string) => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -95,11 +98,6 @@ function ContextMenu({
 
   if (!state.visible || !state.operationId) return null;
 
-  const menuItems: { status: OperationStatus; color: string }[] = [
-    { status: "completed", color: "hover:bg-emerald-500/20 text-emerald-300" },
-    { status: "cancelled", color: "hover:bg-rose-500/20 text-rose-300" },
-  ];
-
   return (
     <div
       ref={menuRef}
@@ -107,29 +105,30 @@ function ContextMenu({
       style={{ left: state.x, top: state.y }}
     >
       <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/40">
-        Durum Güncelle
+        İşlemler
       </div>
-      {menuItems.map(({ status, color }) => {
-        const config = statusConfig[status];
-        const Icon = config.icon;
-        return (
-          <button
-            key={status}
-            type="button"
-            onClick={() => {
-              onStatusChange(state.operationId!, status);
-              onClose();
-            }}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[13px] font-medium transition-colors",
-              color
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            {config.label}
-          </button>
-        );
-      })}
+      <button
+        type="button"
+        onClick={() => {
+          onEdit(state.operationId!);
+          onClose();
+        }}
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[13px] font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+      >
+        <Pencil className="h-4 w-4" />
+        Düzenle
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          onStatusChange(state.operationId!, "completed");
+          onClose();
+        }}
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[13px] font-medium text-emerald-300 transition-colors hover:bg-emerald-500/20"
+      >
+        <CheckCircle className="h-4 w-4" />
+        {statusConfig.completed.label}
+      </button>
     </div>
   );
 }
@@ -192,6 +191,7 @@ function OperationCard({
   const vesselUpper = upperTr(op.vesselName);
   const portUpper = upperTr(op.port || "-");
   const unitUpper = op.unit === "MT" ? "TON" : upperTr(op.unit);
+  const isYacht = op.vesselType === "yacht";
 
   return (
     <div
@@ -201,10 +201,12 @@ function OperationCard({
       onClick={(e) => e.stopPropagation()}
       onContextMenu={(e) => onContextMenu(e, op.id)}
       className={cn(
-        "group relative z-10 flex w-full cursor-grab select-none flex-col rounded-lg border border-white/10 bg-white/[0.06] px-2 py-2 2xl:px-3 2xl:py-3 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_20px_rgba(0,0,0,0.25)] backdrop-blur-md transition active:cursor-grabbing",
+        "group relative z-10 flex w-full cursor-grab select-none flex-col rounded-lg border px-2 py-2 2xl:px-3 2xl:py-3 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_8px_20px_rgba(0,0,0,0.25)] backdrop-blur-md transition active:cursor-grabbing",
         "before:absolute before:left-0 before:top-0 before:h-full before:w-1 before:rounded-l-xl before:transition-all before:duration-300 before:content-['']",
         statusStripe,
-        "hover:bg-white/[0.08]",
+        isYacht
+          ? "border-purple-500/20 bg-purple-500/[0.08] hover:bg-purple-500/[0.12]"
+          : "border-white/10 bg-white/[0.06] hover:bg-white/[0.08]",
         className
       )}
     >
@@ -240,9 +242,12 @@ function OperationCard({
         <div className="text-[10px] leading-tight text-white/70 sm:text-[12px] 2xl:text-[14px]">
           <div className="line-clamp-1">{op.loadingPlace ? `${upperTr(op.loadingPlace)} → ${portUpper}` : portUpper}</div>
         </div>
-        <div className="text-[10px] font-semibold leading-tight text-blue-400 sm:text-[12px] 2xl:text-[14px]">
+        <div className={cn("text-[10px] font-semibold leading-tight sm:text-[12px] 2xl:text-[14px]", isYacht ? "text-purple-400" : "text-blue-400")}>
           {op.quantity} {unitUpper}
         </div>
+        {isYacht && (
+          <div className="mt-0.5 text-[8px] font-bold uppercase tracking-wider text-purple-400/60">YAT</div>
+        )}
       </div>
     </div>
   );
@@ -263,6 +268,7 @@ export default function DashboardPage() {
     operationId: null,
   });
   const [realtimeConnected, setRealtimeConnected] = useState(false);
+  const [editingOpId, setEditingOpId] = useState<string | null>(null);
 
   const { broadcast, subscribe } = useRealtime();
   
@@ -273,6 +279,7 @@ export default function DashboardPage() {
 
   const [form, setForm] = useState({
     vesselName: "",
+    vesselType: "ship" as VesselType,
     imoNumber: "",
     quantity: "",
     unit: "MT" as Unit,
@@ -420,6 +427,23 @@ export default function DashboardPage() {
     setContextMenu((prev) => ({ ...prev, visible: false }));
   }, []);
 
+  const handleEdit = useCallback((operationId: string) => {
+    const op = (pendingOperations ?? operations).find((o) => o.id === operationId);
+    if (!op) return;
+    setEditingOpId(op.id);
+    setForm({
+      vesselName: op.vesselName,
+      vesselType: op.vesselType || "ship",
+      imoNumber: op.imoNumber || "",
+      quantity: String(op.quantity),
+      unit: op.unit,
+      loadingPlace: op.loadingPlace || "",
+      port: op.port,
+      date: op.date,
+    });
+    setOpen(true);
+  }, [pendingOperations, operations]);
+
   const handleStatusChange = useCallback((operationId: string, status: OperationStatus) => {
     if (pendingOperations) {
       setPendingOperations((prev) =>
@@ -436,9 +460,11 @@ export default function DashboardPage() {
   }, [pendingOperations, broadcast, operations, updateOperation]);
 
   function openModal(presetDate?: string) {
+    setEditingOpId(null);
     setForm((prev) => ({
       ...prev,
       vesselName: "",
+      vesselType: "ship" as VesselType,
       imoNumber: "",
       quantity: "",
       unit: "MT",
@@ -501,27 +527,53 @@ export default function DashboardPage() {
       return;
     }
 
-    const op: SupplyOperation = {
-      id: nextId(),
-      vesselName,
-      imoNumber: form.imoNumber.trim() || undefined,
-      quantity: qty,
-      unit: form.unit,
-      loadingPlace,
-      port,
-      date: form.date,
-      status: "planned",
-      driverName: "",
-      driverPhone: "",
-      agentNote: "",
-    };
-
-    if (pendingOperations) {
-      setPendingOperations((prev) => [op, ...(prev ?? [])]);
+    if (editingOpId) {
+      // Düzenleme modu
+      const updates: Partial<SupplyOperation> = {
+        vesselName,
+        vesselType: form.vesselType,
+        imoNumber: form.imoNumber.trim() || undefined,
+        quantity: qty,
+        unit: form.unit,
+        loadingPlace,
+        port,
+        date: form.date,
+      };
+      if (pendingOperations) {
+        setPendingOperations((prev) =>
+          (prev ?? []).map((op) => (op.id === editingOpId ? { ...op, ...updates } : op))
+        );
+      } else {
+        updateOperation(editingOpId, updates);
+      }
+      const existingOp = (pendingOperations ?? operations).find((o) => o.id === editingOpId);
+      if (existingOp) broadcast("operation_update", { ...existingOp, ...updates });
     } else {
-      addOperation(op);
+      // Yeni ekleme modu
+      const op: SupplyOperation = {
+        id: nextId(),
+        vesselName,
+        vesselType: form.vesselType,
+        imoNumber: form.imoNumber.trim() || undefined,
+        quantity: qty,
+        unit: form.unit,
+        loadingPlace,
+        port,
+        date: form.date,
+        status: "planned",
+        driverName: "",
+        driverPhone: "",
+        agentNote: "",
+      };
+
+      if (pendingOperations) {
+        setPendingOperations((prev) => [op, ...(prev ?? [])]);
+      } else {
+        addOperation(op);
+      }
+      broadcast("operation_insert", op);
     }
-    broadcast("operation_insert", op);
+    setEditingOpId(null);
     setOpen(false);
   }
 
@@ -772,9 +824,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <div>
                 <div className="text-sm font-semibold tracking-wider text-white/70">
-                  YENİ İKMAL
+                  {editingOpId ? "İKMAL DÜZENLE" : "YENİ İKMAL"}
                 </div>
-                <div className="text-lg font-semibold">Operasyon Ekle</div>
+                <div className="text-lg font-semibold">{editingOpId ? "Operasyon Güncelle" : "Operasyon Ekle"}</div>
               </div>
               <button
                 type="button"
@@ -787,16 +839,45 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-4 px-5 py-4">
+              {/* Vessel Type Selection */}
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, vesselType: "ship" }))}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-semibold transition-all",
+                    form.vesselType === "ship"
+                      ? "border-blue-500/40 bg-blue-500/15 text-blue-400 shadow-[0_0_12px_rgba(59,130,246,0.15)]"
+                      : "border-white/10 bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
+                  )}
+                >
+                  <Anchor className="h-4 w-4" />
+                  Gemi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm((p) => ({ ...p, vesselType: "yacht" }))}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-semibold transition-all",
+                    form.vesselType === "yacht"
+                      ? "border-purple-500/40 bg-purple-500/15 text-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.15)]"
+                      : "border-white/10 bg-white/[0.03] text-white/50 hover:bg-white/[0.06]"
+                  )}
+                >
+                  ⛵ Yat
+                </button>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="grid gap-2">
-                  <label className="text-xs font-semibold text-white/70">Gemi Adı</label>
+                  <label className="text-xs font-semibold text-white/70">{form.vesselType === "yacht" ? "Yat Adı" : "Gemi Adı"}</label>
                   <input
                     value={form.vesselName}
                     onChange={(e) =>
                       setForm((p) => ({ ...p, vesselName: e.target.value }))
                     }
                     className="h-11 rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-white/25"
-                    placeholder="Örn: M/T Asmira Star"
+                    placeholder={form.vesselType === "yacht" ? "Örn: M/Y Asmira" : "Örn: M/T Asmira Star"}
                   />
                 </div>
                 <div className="grid gap-2">
@@ -886,7 +967,7 @@ export default function DashboardPage() {
                 onClick={save}
                 className="bg-blue-600 text-white hover:bg-blue-500"
               >
-                Kaydet
+                {editingOpId ? "Güncelle" : "Kaydet"}
               </Button>
             </div>
           </div>
@@ -897,7 +978,9 @@ export default function DashboardPage() {
         state={contextMenu}
         onClose={closeContextMenu}
         onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
       />
+
     </div>
   );
 }

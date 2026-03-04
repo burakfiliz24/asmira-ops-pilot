@@ -4,10 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, ChevronDown, LogOut, User } from "lucide-react";
+import { Menu, X, ChevronDown, LogOut, User, RefreshCw } from "lucide-react";
 import { navSections } from "@/lib/constants/nav";
 import { cn } from "@/lib/utils/cn";
 import { useAuthStore } from "@/store/authStore";
+import { useSyncStatusStore } from "@/store/syncStatusStore";
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
@@ -20,6 +21,7 @@ export default function MobileNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const { isSyncing, isOnline } = useSyncStatusStore();
 
   const handleLogout = () => {
     logout();
@@ -44,6 +46,14 @@ export default function MobileNav() {
             className="h-8 w-auto object-contain brightness-0 invert"
             priority
           />
+          {/* Sync indicator */}
+          <div className="flex items-center gap-1.5">
+            <RefreshCw className={cn("h-3 w-3", isSyncing ? "animate-spin text-cyan-400" : "text-white/20")} />
+            <div className={cn(
+              "h-2 w-2 rounded-full",
+              isOnline ? "bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.6)]" : "bg-red-400 shadow-[0_0_4px_rgba(248,113,113,0.6)]"
+            )} />
+          </div>
         </div>
         <button
           type="button"

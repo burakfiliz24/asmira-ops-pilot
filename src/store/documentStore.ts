@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { trucksApi, trailersApi, driversApi, vehicleSetsApi } from '@/lib/api/client';
 
 // Types
 export type VehicleDocumentType = 
@@ -257,6 +258,9 @@ interface DocumentStore {
   getSupplierVehicles: () => Vehicle[];
   getAllVehicles: () => Vehicle[];
   getAllDrivers: () => Driver[];
+  
+  // Server sync
+  syncFromServer: () => Promise<void>;
 }
 
 // Persist için doküman listesinden Blob/URL'leri temizle
@@ -284,12 +288,15 @@ export const useDocumentStore = create<DocumentStore>()(
       documents: createDefaultVehicleDocuments(),
     };
     set((state) => ({ trucks: [newTruck, ...state.trucks] }));
+    trucksApi.create({ plate: truckData.plate, category: truckData.category, documents: createDefaultVehicleDocuments().map(d => ({ type: d.type, label: d.label })) })
+      .catch((e) => console.warn('[Sync] addTruck failed:', e));
   },
   
   updateTruck: (id, data) => {
     set((state) => ({
       trucks: state.trucks.map((t) => t.id === id ? { ...t, ...data } : t),
     }));
+    if (data.plate) trucksApi.update(id, data.plate).catch((e) => console.warn('[Sync] updateTruck failed:', e));
   },
   
   deleteTruck: (id) => {
@@ -297,6 +304,7 @@ export const useDocumentStore = create<DocumentStore>()(
       trucks: state.trucks.filter((t) => t.id !== id),
       vehicleSets: state.vehicleSets.filter((s) => s.truckId !== id),
     }));
+    trucksApi.delete(id).catch((e) => console.warn('[Sync] deleteTruck failed:', e));
   },
   
   uploadTruckDocument: (truckId, docType, file) => {
@@ -312,6 +320,9 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.upload(file, truckId, 'truck', docType).catch((e) => console.warn('[Sync] uploadTruckDoc failed:', e))
+    );
   },
   
   updateTruckDocument: (truckId, docType, data) => {
@@ -324,6 +335,11 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    if (data.expiryDate !== undefined) {
+      import('@/lib/api/client').then(({ documentsApi }) =>
+        documentsApi.updateExpiry(truckId, 'truck', docType, data.expiryDate ?? null).catch((e) => console.warn('[Sync] updateTruckDoc failed:', e))
+      );
+    }
   },
   
   deleteTruckDocument: (truckId, docType) => {
@@ -338,6 +354,9 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.deleteDoc(truckId, 'truck', docType).catch((e) => console.warn('[Sync] deleteTruckDoc failed:', e))
+    );
   },
   
   // Trailer Actions
@@ -348,12 +367,15 @@ export const useDocumentStore = create<DocumentStore>()(
       documents: createDefaultVehicleDocuments(),
     };
     set((state) => ({ trailers: [newTrailer, ...state.trailers] }));
+    trailersApi.create({ plate: trailerData.plate, category: trailerData.category, documents: createDefaultVehicleDocuments().map(d => ({ type: d.type, label: d.label })) })
+      .catch((e) => console.warn('[Sync] addTrailer failed:', e));
   },
   
   updateTrailer: (id, data) => {
     set((state) => ({
       trailers: state.trailers.map((t) => t.id === id ? { ...t, ...data } : t),
     }));
+    if (data.plate) trailersApi.update(id, data.plate).catch((e) => console.warn('[Sync] updateTrailer failed:', e));
   },
   
   deleteTrailer: (id) => {
@@ -361,6 +383,7 @@ export const useDocumentStore = create<DocumentStore>()(
       trailers: state.trailers.filter((t) => t.id !== id),
       vehicleSets: state.vehicleSets.filter((s) => s.trailerId !== id),
     }));
+    trailersApi.delete(id).catch((e) => console.warn('[Sync] deleteTrailer failed:', e));
   },
   
   uploadTrailerDocument: (trailerId, docType, file) => {
@@ -376,6 +399,9 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.upload(file, trailerId, 'trailer', docType).catch((e) => console.warn('[Sync] uploadTrailerDoc failed:', e))
+    );
   },
   
   updateTrailerDocument: (trailerId, docType, data) => {
@@ -388,6 +414,11 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    if (data.expiryDate !== undefined) {
+      import('@/lib/api/client').then(({ documentsApi }) =>
+        documentsApi.updateExpiry(trailerId, 'trailer', docType, data.expiryDate ?? null).catch((e) => console.warn('[Sync] updateTrailerDoc failed:', e))
+      );
+    }
   },
   
   deleteTrailerDocument: (trailerId, docType) => {
@@ -402,6 +433,9 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.deleteDoc(trailerId, 'trailer', docType).catch((e) => console.warn('[Sync] deleteTrailerDoc failed:', e))
+    );
   },
   
   // VehicleSet Actions
@@ -411,6 +445,7 @@ export const useDocumentStore = create<DocumentStore>()(
       ...setData,
     };
     set((state) => ({ vehicleSets: [newSet, ...state.vehicleSets] }));
+    vehicleSetsApi.create(setData).catch((e) => console.warn('[Sync] addVehicleSet failed:', e));
   },
   
   updateVehicleSet: (id, data) => {
@@ -423,6 +458,7 @@ export const useDocumentStore = create<DocumentStore>()(
     set((state) => ({
       vehicleSets: state.vehicleSets.filter((s) => s.id !== id),
     }));
+    vehicleSetsApi.delete(id).catch((e) => console.warn('[Sync] deleteVehicleSet failed:', e));
   },
   
   // Driver Actions
@@ -433,18 +469,26 @@ export const useDocumentStore = create<DocumentStore>()(
       documents: createDefaultDriverDocuments(),
     };
     set((state) => ({ drivers: [newDriver, ...state.drivers] }));
+    driversApi.create({ name: driverData.name, tcNo: driverData.tcNo, phone: driverData.phone, documents: createDefaultDriverDocuments().map(d => ({ type: d.type, label: d.label })) })
+      .catch((e) => console.warn('[Sync] addDriver failed:', e));
   },
   
   updateDriver: (id, data) => {
     set((state) => ({
       drivers: state.drivers.map((d) => d.id === id ? { ...d, ...data } : d),
     }));
+    const driver = get().drivers.find((d) => d.id === id);
+    if (driver) {
+      driversApi.update(id, { name: data.name ?? driver.name, tcNo: data.tcNo ?? driver.tcNo, phone: data.phone ?? driver.phone })
+        .catch((e) => console.warn('[Sync] updateDriver failed:', e));
+    }
   },
   
   deleteDriver: (id) => {
     set((state) => ({
       drivers: state.drivers.filter((d) => d.id !== id),
     }));
+    driversApi.delete(id).catch((e) => console.warn('[Sync] deleteDriver failed:', e));
   },
   
   uploadDriverDocument: (driverId, docType, file) => {
@@ -460,6 +504,9 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.upload(file, driverId, 'driver', docType).catch((e) => console.warn('[Sync] uploadDriverDoc failed:', e))
+    );
   },
 
   updateDriverDocument: (driverId, docType, data) => {
@@ -472,6 +519,11 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    if (data.expiryDate !== undefined) {
+      import('@/lib/api/client').then(({ documentsApi }) =>
+        documentsApi.updateExpiry(driverId, 'driver', docType, data.expiryDate ?? null).catch((e) => console.warn('[Sync] updateDriverDoc failed:', e))
+      );
+    }
   },
   
   deleteDriverDocument: (driverId, docType) => {
@@ -486,6 +538,9 @@ export const useDocumentStore = create<DocumentStore>()(
         };
       }),
     }));
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.deleteDoc(driverId, 'driver', docType).catch((e) => console.warn('[Sync] deleteDriverDoc failed:', e))
+    );
   },
   
   // Selectors - Yeni
@@ -660,6 +715,69 @@ export const useDocumentStore = create<DocumentStore>()(
           };
         }),
       }));
+    }
+  },
+
+  // Server sync
+  syncFromServer: async () => {
+    try {
+      const [serverTrucks, serverTrailers, serverDrivers, serverSets] = await Promise.all([
+        trucksApi.getAll(),
+        trailersApi.getAll(),
+        driversApi.getAll(),
+        vehicleSetsApi.getAll(),
+      ]);
+
+      const mapDocs = (docs: { type: string; label: string; fileName?: string; filePath?: string; expiryDate?: string }[]): DocumentInfo[] =>
+        docs.map((d) => ({
+          type: d.type,
+          label: d.label,
+          fileName: d.fileName || null,
+          fileUrl: d.filePath ? `/api/documents/download/${d.filePath}` : null,
+          fileBlob: null,
+          expiryDate: d.expiryDate || null,
+        }));
+
+      if (serverTrucks.length > 0 || serverTrailers.length > 0 || serverDrivers.length > 0) {
+        set((state) => ({
+          trucks: serverTrucks.length > 0
+            ? serverTrucks.map((t) => ({
+                id: t.id,
+                plate: t.plate,
+                category: t.category as "asmira" | "supplier",
+                documents: t.documents.length > 0 ? mapDocs(t.documents) : createDefaultVehicleDocuments(),
+              }))
+            : state.trucks,
+          trailers: serverTrailers.length > 0
+            ? serverTrailers.map((t) => ({
+                id: t.id,
+                plate: t.plate,
+                category: t.category as "asmira" | "supplier",
+                documents: t.documents.length > 0 ? mapDocs(t.documents) : createDefaultVehicleDocuments(),
+              }))
+            : state.trailers,
+          drivers: serverDrivers.length > 0
+            ? serverDrivers.map((d) => ({
+                id: d.id,
+                name: d.name,
+                tcNo: d.tcNo,
+                phone: d.phone,
+                documents: d.documents.length > 0 ? mapDocs(d.documents) : createDefaultDriverDocuments(),
+              }))
+            : state.drivers,
+          vehicleSets: serverSets.length > 0
+            ? serverSets.map((s) => ({
+                id: s.id,
+                truckId: s.truckId,
+                trailerId: s.trailerId,
+                category: s.category as "asmira" | "supplier",
+              }))
+            : state.vehicleSets,
+        }));
+        console.log("[Sync] Documents synced from server");
+      }
+    } catch (e) {
+      console.warn("[Sync] syncDocuments failed, using local data:", e);
     }
   },
     }),
