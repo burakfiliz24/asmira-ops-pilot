@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Edit3, Trash2, X, User, Shield, ShieldCheck, Eye, EyeOff, Users, Download, Upload, Database } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { useAuthStore, type User as UserType } from "@/store/authStore";
@@ -9,6 +10,15 @@ import { toast } from "@/store/toastStore";
 
 export default function SettingsPage() {
   const { users, user: currentUser, addUser, updateUser, deleteUser } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (currentUser && currentUser.role !== "admin") {
+      router.replace("/dashboard");
+    }
+  }, [currentUser, router]);
+
+  if (!currentUser || currentUser.role !== "admin") return null;
   const documentStore = useDocumentStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   

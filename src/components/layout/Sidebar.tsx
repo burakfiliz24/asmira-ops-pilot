@@ -187,7 +187,7 @@ export default function Sidebar() {
               {section.title}
             </div>
             <div className="space-y-0.5">
-              {section.items.map((item) => {
+              {section.items.filter((item) => !item.adminOnly || user?.role === "admin").map((item) => {
                 const active = isActive(pathname, item.href);
                 const Icon = item.icon;
                 const staggerIdx = getStaggerIndex(item.href);

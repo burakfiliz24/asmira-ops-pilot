@@ -6,6 +6,7 @@ export type NavItem = {
   href: string;
   icon?: LucideIcon;
   children?: NavItem[];
+  adminOnly?: boolean;
 };
 
 export type NavSection = {
@@ -40,7 +41,7 @@ export const navSections: NavSection[] = [
         ],
       },
       { title: "Port Wiki", href: "/port-wiki", icon: BookOpen },
-      { title: "Ayarlar", href: "/settings", icon: Settings },
+      { title: "Ayarlar", href: "/settings", icon: Settings, adminOnly: true },
     ],
   }
 ];
