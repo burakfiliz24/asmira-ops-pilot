@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# API isteklerini PHP'ye yönlendir
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Mevcut dosya veya dizin ise dokunma
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# SPA fallback - tüm diğer istekleri index.html'e yönlendir
+RewriteRule ^ index.html [L]

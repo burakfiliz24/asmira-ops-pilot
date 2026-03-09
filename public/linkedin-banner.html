@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asmira Ops Pilot - LinkedIn Banner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .banner {
+      width: 1200px;
+      height: 627px;
+      background: linear-gradient(135deg, #0a1628 0%, #0d1f3c 50%, #0a1525 100%);
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+    }
+    
+    /* Wave Pattern */
+    .wave {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      opacity: 0.08;
+    }
+    
+    .wave svg {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Gradient Orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+    }
+    
+    .orb-1 {
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
+      top: -100px;
+      right: -50px;
+    }
+    
+    .orb-2 {
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 70%);
+      bottom: -50px;
+      left: -50px;
+    }
+    
+    .orb-3 {
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.1) 0%, transparent 70%);
+      top: 50%;
+      left: 30%;
+    }
+    
+    /* Grid Pattern */
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 10;
+      height: 100%;
+      display: flex;
+      padding: 60px 80px;
+    }
+    
+    .left-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .right-section {
+      width: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(6, 182, 212, 0.3);
+    }
+    
+    .logo-icon svg {
+      width: 32px;
+      height: 32px;
+      color: white;
+    }
+    
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo-text span {
+      color: #06b6d4;
+    }
+    
+    /* Title */
+    .title {
+      font-size: 52px;
+      font-weight: 800;
+      color: white;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -1px;
+    }
+    
+    .title .highlight {
+      background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Subtitle */
+    .subtitle {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.6);
+      line-height: 1.6;
+      max-width: 500px;
+      margin-bottom: 40px;
+    }
+    
+    /* Features */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      padding: 10px 18px;
+      border-radius: 100px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+    }
+    
+    .feature svg {
+      width: 16px;
+      height: 16px;
+      color: #06b6d4;
+    }
+    
+    /* Dashboard Preview */
+    .dashboard-preview {
+      width: 380px;
+      height: 420px;
+      background: linear-gradient(145deg, rgba(15, 25, 45, 0.9) 0%, rgba(10, 20, 35, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 
+        0 25px 60px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+      transform: perspective(1000px) rotateY(-8deg) rotateX(2deg);
+    }
+    
+    .preview-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .preview-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    
+    .preview-dot.red { background: #ef4444; }
+    .preview-dot.yellow { background: #eab308; }
+    .preview-dot.green { background: #22c55e; }
+    
+    .preview-title {
+      margin-left: auto;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 500;
+    }
+    
+    /* Calendar Preview */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+    
+    .calendar-day {
+      aspect-ratio: 1;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.4);
+      font-weight: 500;
+    }
+    
+    .calendar-day.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(59, 130, 246, 0.3) 100%);
+      color: #06b6d4;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+    
+    .calendar-day.highlight {
+      background: rgba(168, 85, 247, 0.2);
+      color: #a855f7;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    
+    .stat {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #06b6d4;
+      margin-bottom: 4px;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Floating Icons */
+    .floating-icon {
+      position: absolute;
+      color: rgba(6, 182, 212, 0.08);
+    }
+    
+    .floating-icon.ship {
+      top: 80px;
+      right: 520px;
+      width: 80px;
+      height: 80px;
+    }
+    
+    .floating-icon.anchor {
+      bottom: 120px;
+      right: 480px;
+      width: 60px;
+      height: 60px;
+    }
+    
+    /* Badge */
+    .badge {
+      position: absolute;
+      top: 40px;
+      right: 60px;
+      background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <!-- Background Elements -->
+    <div class="grid-pattern"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    
+    <!-- Wave -->
+    <div class="wave">
+      <svg viewBox="0 0 1200 200" preserveAspectRatio="none">
+        <path fill="#06b6d4" d="M0,100 C150,150 350,50 500,100 C650,150 850,50 1000,100 C1100,130 1150,80 1200,100 L1200,200 L0,200 Z"/>
+      </svg>
+    </div>
+    
+    <!-- Floating Icons -->
+    <div class="floating-icon ship">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+        <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/>
+        <path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/>
+        <path d="M12 10v4"/>
+        <path d="M12 2v3"/>
+      </svg>
+    </div>
+    
+    <div class="floating-icon anchor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+        <circle cx="12" cy="5" r="3"/>
+        <line x1="12" y1="8" x2="12" y2="21"/>
+        <path d="M5 12H2a10 10 0 0 0 20 0h-3"/>
+      </svg>
+    </div>
+    
+    <!-- Badge -->
+    <div class="badge">🚀 Yeni Yazılım</div>
+    
+    <!-- Content -->
+    <div class="content">
+      <div class="left-section">
+        <!-- Logo -->
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>
+              <path d="M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76"/>
+              <path d="M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6"/>
+              <path d="M12 10v4"/>
+              <path d="M12 2v3"/>
+            </svg>
+          </div>
+          <div class="logo-text">ASMIRA <span>ENERGY</span></div>
+        </div>
+        
+        <!-- Title -->
+        <h1 class="title">
+          Dijital Dönüşümde<br>
+          <span class="highlight">Yeni Adım</span>
+        </h1>
+        
+        <!-- Subtitle -->
+        <p class="subtitle">
+          Denizcilik operasyonlarımızı tek platformda yönetiyoruz. 
+          Asmira Ops Pilot ile evrak takibi, ikmal planlaması ve daha fazlası.
+        </p>
+        
+        <!-- Features -->
+        <div class="features">
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            Evrak Takibi
+          </div>
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            İkmal Takvimi
+          </div>
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+              <line x1="4" y1="22" x2="4" y2="15"/>
+            </svg>
+            Liman Bilgileri
+          </div>
+          <div class="feature">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Gerçek Zamanlı
+          </div>
+        </div>
+      </div>
+      
+      <div class="right-section">
+        <!-- Dashboard Preview -->
+        <div class="dashboard-preview">
+          <div class="preview-header">
+            <div class="preview-dot red"></div>
+            <div class="preview-dot yellow"></div>
+            <div class="preview-dot green"></div>
+            <span class="preview-title">Asmira Ops Pilot</span>
+          </div>
+          
+          <!-- Calendar -->
+          <div class="calendar-grid">
+            <div class="calendar-day">1</div>
+            <div class="calendar-day">2</div>
+            <div class="calendar-day active">3</div>
+            <div class="calendar-day">4</div>
+            <div class="calendar-day highlight">5</div>
+            <div class="calendar-day">6</div>
+            <div class="calendar-day">7</div>
+            <div class="calendar-day">8</div>
+            <div class="calendar-day active">9</div>
+            <div class="calendar-day">10</div>
+            <div class="calendar-day">11</div>
+            <div class="calendar-day">12</div>
+            <div class="calendar-day highlight">13</div>
+            <div class="calendar-day">14</div>
+            <div class="calendar-day">15</div>
+            <div class="calendar-day active">16</div>
+            <div class="calendar-day">17</div>
+            <div class="calendar-day">18</div>
+            <div class="calendar-day">19</div>
+            <div class="calendar-day">20</div>
+            <div class="calendar-day">21</div>
+          </div>
+          
+          <!-- Stats -->
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value">24</div>
+              <div class="stat-label">İkmal</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">850</div>
+              <div class="stat-label">MT</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">12</div>
+              <div class="stat-label">Liman</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

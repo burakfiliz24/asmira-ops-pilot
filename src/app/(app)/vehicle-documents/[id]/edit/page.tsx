@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/Button";
 
+export function generateStaticParams() {
+  return [];
+}
+
 export default async function EditVehicleDocumentPage({
   params,
 }: {
