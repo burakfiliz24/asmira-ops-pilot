@@ -19,6 +19,7 @@ RewriteRule ^init-db/?$ init-db.php [L,QSA]
 # Petitions
 RewriteRule ^petition-categories/?$ petition-categories.php [L,QSA]
 RewriteRule ^petition-templates/?$ petition-templates.php [L,QSA]
+RewriteRule ^supplier-companies/?$ supplier-companies.php [L,QSA]
 
 # Documents
 RewriteRule ^documents/upload/?$ documents/upload.php [L,QSA]

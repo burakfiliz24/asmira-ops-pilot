@@ -598,6 +598,14 @@ export const useDocumentStore = create<DocumentStore>()(
       trailers: [newTrailer, ...state.trailers],
       vehicleSets: [newSet, ...state.vehicleSets],
     }));
+    // API sync
+    const docs = createDefaultVehicleDocuments().map(d => ({ type: d.type, label: d.label }));
+    trucksApi.create({ plate: vehicleData.vehiclePlate, category: vehicleData.category, documents: docs })
+      .catch((e) => console.warn('[Sync] addVehicle truck failed:', e));
+    trailersApi.create({ plate: vehicleData.trailerPlate, category: vehicleData.category, documents: docs })
+      .catch((e) => console.warn('[Sync] addVehicle trailer failed:', e));
+    vehicleSetsApi.create({ truckId, trailerId, category: vehicleData.category })
+      .catch((e) => console.warn('[Sync] addVehicle set failed:', e));
   },
   
   updateVehicle: (id, data) => {
@@ -611,6 +619,8 @@ export const useDocumentStore = create<DocumentStore>()(
           t.id === vehicleSet.truckId ? { ...t, plate: data.vehiclePlate! } : t
         ),
       }));
+      trucksApi.update(vehicleSet.truckId, data.vehiclePlate)
+        .catch((e) => console.warn('[Sync] updateVehicle truck failed:', e));
     }
     if (data.trailerPlate) {
       set((state) => ({
@@ -618,6 +628,8 @@ export const useDocumentStore = create<DocumentStore>()(
           t.id === vehicleSet.trailerId ? { ...t, plate: data.trailerPlate! } : t
         ),
       }));
+      trailersApi.update(vehicleSet.trailerId, data.trailerPlate)
+        .catch((e) => console.warn('[Sync] updateVehicle trailer failed:', e));
     }
   },
   
@@ -626,6 +638,7 @@ export const useDocumentStore = create<DocumentStore>()(
     set((state) => ({
       vehicleSets: state.vehicleSets.filter((s) => s.id !== id),
     }));
+    vehicleSetsApi.delete(id).catch((e) => console.warn('[Sync] deleteVehicle failed:', e));
   },
   
   uploadVehicleDocument: (vehicleId, target, docType, file) => {
@@ -633,6 +646,7 @@ export const useDocumentStore = create<DocumentStore>()(
     const vehicleSet = get().vehicleSets.find((s) => s.id === vehicleId);
     if (!vehicleSet) return;
     
+    const ownerId = target === 'truck' ? vehicleSet.truckId : vehicleSet.trailerId;
     if (target === 'truck') {
       set((state) => ({
         trucks: state.trucks.map((t) => {
@@ -658,12 +672,16 @@ export const useDocumentStore = create<DocumentStore>()(
         }),
       }));
     }
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.upload(file, ownerId, target, docType).catch((e) => console.warn('[Sync] uploadVehicleDoc failed:', e))
+    );
   },
   
   updateVehicleDocument: (vehicleId, target, docType, data) => {
     const vehicleSet = get().vehicleSets.find((s) => s.id === vehicleId);
     if (!vehicleSet) return;
     
+    const ownerId = target === 'truck' ? vehicleSet.truckId : vehicleSet.trailerId;
     if (target === 'truck') {
       set((state) => ({
         trucks: state.trucks.map((t) => {
@@ -684,6 +702,11 @@ export const useDocumentStore = create<DocumentStore>()(
           };
         }),
       }));
+    }
+    if (data.expiryDate !== undefined) {
+      import('@/lib/api/client').then(({ documentsApi }) =>
+        documentsApi.updateExpiry(ownerId, target, docType, data.expiryDate ?? null).catch((e) => console.warn('[Sync] updateVehicleDoc failed:', e))
+      );
     }
   },
   
@@ -691,6 +714,7 @@ export const useDocumentStore = create<DocumentStore>()(
     const vehicleSet = get().vehicleSets.find((s) => s.id === vehicleId);
     if (!vehicleSet) return;
     
+    const ownerId = target === 'truck' ? vehicleSet.truckId : vehicleSet.trailerId;
     if (target === 'truck') {
       set((state) => ({
         trucks: state.trucks.map((t) => {
@@ -716,6 +740,9 @@ export const useDocumentStore = create<DocumentStore>()(
         }),
       }));
     }
+    import('@/lib/api/client').then(({ documentsApi }) =>
+      documentsApi.deleteDoc(ownerId, target, docType).catch((e) => console.warn('[Sync] deleteVehicleDoc failed:', e))
+    );
   },
 
   // Server sync

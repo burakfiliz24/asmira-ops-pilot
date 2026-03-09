@@ -137,6 +137,15 @@ try {
         )
     ");
 
+    // Tedarikçi Firmaları (JSON blob)
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS supplier_data (
+            id INT PRIMARY KEY DEFAULT 1,
+            data LONGTEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    ");
+
     // Varsayılan admin kullanıcısı
     $stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute(['asmira']);

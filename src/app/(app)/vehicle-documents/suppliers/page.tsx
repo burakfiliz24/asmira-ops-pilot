@@ -5,8 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { PDFDocument } from "pdf-lib";
 import { saveAs } from "file-saver";
 import { cn } from "@/lib/utils/cn";
-
-const STORAGE_KEY = "asmira-supplier-companies";
+import { supplierCompaniesApi } from "@/lib/api/client";
 
 type DocumentType = 
   | "ruhsat"
@@ -149,37 +148,47 @@ function countUploaded(docs: DocumentInfo[]): number {
 }
 
 export default function SupplierVehicleDocumentsPage() {
-  const [companies, setCompanies] = useState<SupplierCompany[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          return initialCompanies;
+  const [companies, setCompanies] = useState<SupplierCompany[]>(initialCompanies);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Sunucudan veri çek (ilk yükleme)
+  useEffect(() => {
+    supplierCompaniesApi.getAll()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCompanies(data as unknown as SupplierCompany[]);
         }
-      }
-    }
-    return initialCompanies;
-  });
+        setDataLoaded(true);
+      })
+      .catch(() => {
+        // Sunucu erişilemezse localStorage fallback
+        const saved = localStorage.getItem("asmira-supplier-companies");
+        if (saved) {
+          try { setCompanies(JSON.parse(saved)); } catch { /* ignore */ }
+        }
+        setDataLoaded(true);
+      });
+  }, []);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Persist to localStorage
+  // Sunucuya ve localStorage'a kaydet
   useEffect(() => {
-    // Don't save fileBlob as it can't be serialized
+    if (!dataLoaded) return;
     const toSave = companies.map((c) => ({
       ...c,
       vehicles: c.vehicles.map((v) => ({
         ...v,
         documents: v.documents.map((d) => ({
           ...d,
-          fileBlob: null, // Can't serialize Blob
-          fileUrl: null, // URLs are temporary
+          fileBlob: null,
+          fileUrl: null,
         })),
       })),
     }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-  }, [companies]);
+    localStorage.setItem("asmira-supplier-companies", JSON.stringify(toSave));
+    supplierCompaniesApi.save(toSave as unknown as Record<string, unknown>[])
+      .catch((e) => console.warn('[Sync] supplier save failed:', e));
+  }, [companies, dataLoaded]);
   const [draft, setDraft] = useState<{ vehiclePlate: string; trailerPlate: string } | null>(null);
   const [panelVehicle, setPanelVehicle] = useState<{ companyId: string; vehicle: Vehicle } | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});

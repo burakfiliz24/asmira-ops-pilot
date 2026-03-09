@@ -151,6 +151,13 @@ export const documentsApi = {
   getDownloadUrl: (filePath: string) => `/api/documents/download/${filePath}`,
 };
 
+// ============ SUPPLIER COMPANIES ============
+export const supplierCompaniesApi = {
+  getAll: () => request<Record<string, unknown>[]>("/api/supplier-companies"),
+  save: (data: Record<string, unknown>[]) =>
+    request("/api/supplier-companies", { method: "PUT", body: JSON.stringify(data) }),
+};
+
 // ============ PETITION CATEGORIES ============
 type PetitionCategoryData = { id: string; title: string; description: string; icon: string; slug: string };
 
