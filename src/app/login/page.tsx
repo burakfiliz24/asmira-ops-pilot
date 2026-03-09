@@ -39,7 +39,7 @@ export default function LoginPage() {
 
     await new Promise((resolve) => setTimeout(resolve, 600));
 
-    const success = login(username, password);
+    const success = await login(username, password);
 
     if (success) {
       setLoginSuccess(true);

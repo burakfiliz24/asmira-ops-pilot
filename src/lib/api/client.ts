@@ -150,3 +150,32 @@ export const documentsApi = {
 
   getDownloadUrl: (filePath: string) => `/api/documents/download/${filePath}`,
 };
+
+// ============ PETITION CATEGORIES ============
+type PetitionCategoryData = { id: string; title: string; description: string; icon: string; slug: string };
+
+export const petitionCategoriesApi = {
+  getAll: () => request<PetitionCategoryData[]>("/api/petition-categories"),
+  create: (data: { id?: string; title: string; description: string; icon: string; slug: string }) =>
+    request<{ id: string }>("/api/petition-categories", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: Record<string, unknown>) =>
+    request("/api/petition-categories", { method: "PUT", body: JSON.stringify({ id, ...data }) }),
+  delete: (id: string) =>
+    request("/api/petition-categories", { method: "DELETE", body: JSON.stringify({ id }) }),
+};
+
+// ============ PETITION TEMPLATES ============
+type PetitionTemplateData = {
+  id: string; shortName: string; name: string; defaultText: string;
+  category: string; isDefault: number; createdAt: number;
+};
+
+export const petitionTemplatesApi = {
+  getAll: () => request<PetitionTemplateData[]>("/api/petition-templates"),
+  create: (data: { id?: string; shortName: string; name: string; defaultText: string; category: string; isDefault?: boolean; createdAt: number }) =>
+    request<{ id: string }>("/api/petition-templates", { method: "POST", body: JSON.stringify(data) }),
+  update: (id: string, data: Record<string, unknown>) =>
+    request("/api/petition-templates", { method: "PUT", body: JSON.stringify({ id, ...data }) }),
+  delete: (id: string) =>
+    request("/api/petition-templates", { method: "DELETE", body: JSON.stringify({ id }) }),
+};

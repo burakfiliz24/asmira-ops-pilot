@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { petitionCategoriesApi, petitionTemplatesApi } from '@/lib/api/client';
 
 export type CustomCategory = {
   id: string;
@@ -42,6 +43,7 @@ interface PetitionStore {
   initializeDefaults: (category: string, defaults: Array<{ shortName: string; name: string; defaultText: string }>) => void;
   addUploadedDocument: (doc: Omit<UploadedDocument, 'id' | 'createdAt'>) => void;
   deleteUploadedDocument: (id: string) => void;
+  syncFromServer: () => Promise<void>;
 }
 
 function generateSlug(title: string): string {
@@ -73,9 +75,12 @@ export const usePetitionStore = create<PetitionStore>()(
         set((state) => ({
           customCategories: [...state.customCategories, newCategory],
         }));
+        petitionCategoriesApi.create({ ...newCategory })
+          .catch((e) => console.warn('[Sync] addCategory failed:', e));
       },
 
       updateCategory: (id, data) => {
+        const updateData = { ...data, slug: data.title ? generateSlug(data.title) : undefined };
         set((state) => ({
           customCategories: state.customCategories.map((cat) =>
             cat.id === id
@@ -87,12 +92,16 @@ export const usePetitionStore = create<PetitionStore>()(
               : cat
           ),
         }));
+        petitionCategoriesApi.update(id, updateData as Record<string, unknown>)
+          .catch((e) => console.warn('[Sync] updateCategory failed:', e));
       },
 
       deleteCategory: (id) => {
         set((state) => ({
           customCategories: state.customCategories.filter((cat) => cat.id !== id),
         }));
+        petitionCategoriesApi.delete(id)
+          .catch((e) => console.warn('[Sync] deleteCategory failed:', e));
       },
 
       addTemplate: (templateData) => {
@@ -103,6 +112,8 @@ export const usePetitionStore = create<PetitionStore>()(
         set((state) => ({
           customTemplates: [...state.customTemplates, newTemplate],
         }));
+        petitionTemplatesApi.create({ ...newTemplate, isDefault: newTemplate.isDefault ?? false })
+          .catch((e) => console.warn('[Sync] addTemplate failed:', e));
       },
 
       updateTemplate: (id, data) => {
@@ -111,12 +122,16 @@ export const usePetitionStore = create<PetitionStore>()(
             tpl.id === id ? { ...tpl, ...data } : tpl
           ),
         }));
+        petitionTemplatesApi.update(id, data as Record<string, unknown>)
+          .catch((e) => console.warn('[Sync] updateTemplate failed:', e));
       },
 
       deleteTemplate: (id) => {
         set((state) => ({
           customTemplates: state.customTemplates.filter((tpl) => tpl.id !== id),
         }));
+        petitionTemplatesApi.delete(id)
+          .catch((e) => console.warn('[Sync] deleteTemplate failed:', e));
       },
 
       initializeDefaults: (category, defaults) => {
@@ -136,6 +151,11 @@ export const usePetitionStore = create<PetitionStore>()(
         set((state) => ({
           customTemplates: [...state.customTemplates, ...defaultTemplates],
         }));
+        // Varsayılan şablonları sunucuya da kaydet
+        for (const tpl of defaultTemplates) {
+          petitionTemplatesApi.create({ ...tpl, isDefault: true })
+            .catch((e) => console.warn('[Sync] initializeDefaults failed:', e));
+        }
       },
 
       addUploadedDocument: (docData) => {
@@ -156,9 +176,53 @@ export const usePetitionStore = create<PetitionStore>()(
           uploadedDocuments: state.uploadedDocuments.filter((doc) => doc.id !== id),
         }));
       },
+
+      syncFromServer: async () => {
+        try {
+          const [serverCategories, serverTemplates] = await Promise.all([
+            petitionCategoriesApi.getAll(),
+            petitionTemplatesApi.getAll(),
+          ]);
+
+          const updates: Partial<{ customCategories: CustomCategory[]; customTemplates: CustomTemplate[] }> = {};
+
+          if (serverCategories.length > 0) {
+            updates.customCategories = serverCategories.map((c) => ({
+              id: c.id,
+              title: c.title,
+              description: c.description,
+              icon: c.icon as CustomCategory['icon'],
+              slug: c.slug,
+            }));
+          }
+
+          if (serverTemplates.length > 0) {
+            updates.customTemplates = serverTemplates.map((t) => ({
+              id: t.id,
+              shortName: t.shortName,
+              name: t.name,
+              defaultText: t.defaultText,
+              category: t.category,
+              isDefault: !!t.isDefault,
+              createdAt: t.createdAt,
+            }));
+          }
+
+          if (Object.keys(updates).length > 0) {
+            set(updates);
+            console.log('[Sync] Petitions synced from server');
+          }
+        } catch (e) {
+          console.warn('[Sync] syncPetitions failed, using local data:', e);
+        }
+      },
     }),
     {
       name: 'petition-store',
+      partialize: (state) => ({
+        customCategories: state.customCategories,
+        customTemplates: state.customTemplates,
+      }),
     }
   )
 );

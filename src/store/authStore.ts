@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { usersApi } from "@/lib/api/client";
+import { authApi, usersApi } from "@/lib/api/client";
 
 export interface User {
   id: string;
@@ -14,7 +14,7 @@ interface AuthState {
   user: Omit<User, "password"> | null;
   isAuthenticated: boolean;
   users: User[];
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   addUser: (user: Omit<User, "id">) => void;
   updateUser: (id: string, updates: Partial<Omit<User, "id">>) => void;
@@ -39,22 +39,28 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       users: DEFAULT_USERS,
       
-      login: (username: string, password: string) => {
-        const { users } = get();
-        const foundUser = users.find(
-          (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
-        );
-        
-        if (foundUser) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { password: _unusedPassword, ...userWithoutPassword } = foundUser;
+      login: async (username: string, password: string) => {
+        try {
+          // Sunucu üzerinden doğrula (PHP API)
+          const user = await authApi.login(username, password);
           set({
-            user: userWithoutPassword,
+            user: { id: user.id, username: user.username, name: user.name, role: user.role as "admin" | "user" },
             isAuthenticated: true,
           });
           return true;
+        } catch {
+          // Sunucu erişilemezse lokal kontrol (offline fallback)
+          const { users } = get();
+          const foundUser = users.find(
+            (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+          );
+          if (foundUser) {
+            const { password: _, ...userWithoutPassword } = foundUser;
+            set({ user: userWithoutPassword, isAuthenticated: true });
+            return true;
+          }
+          return false;
         }
-        return false;
       },
       
       logout: () => {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useOperationStore } from "@/store/operationStore";
 import { useAuthStore } from "@/store/authStore";
 import { useDocumentStore } from "@/store/documentStore";
+import { usePetitionStore } from "@/store/petitionStore";
 import { useSyncStatusStore } from "@/store/syncStatusStore";
 
 const POLL_INTERVAL = 30_000; // 30 saniye
@@ -15,6 +16,7 @@ export function useServerSync() {
   const syncOperations = useOperationStore((s) => s.syncFromServer);
   const syncUsers = useAuthStore((s) => s.syncFromServer);
   const syncDocuments = useDocumentStore((s) => s.syncFromServer);
+  const syncPetitions = usePetitionStore((s) => s.syncFromServer);
 
   const setSyncing = useSyncStatusStore((s) => s.setSyncing);
   const setLastSyncTime = useSyncStatusStore((s) => s.setLastSyncTime);
@@ -27,6 +29,7 @@ export function useServerSync() {
         syncOperations(),
         syncUsers(),
         syncDocuments(),
+        syncPetitions(),
       ]);
       setLastSyncTime(new Date());
       setOnline(true);
@@ -37,7 +40,7 @@ export function useServerSync() {
     } finally {
       setSyncing(false);
     }
-  }, [syncOperations, syncUsers, syncDocuments, setSyncing, setLastSyncTime, setOnline]);
+  }, [syncOperations, syncUsers, syncDocuments, syncPetitions, setSyncing, setLastSyncTime, setOnline]);
 
   useEffect(() => {
     // İlk açılışta sync
