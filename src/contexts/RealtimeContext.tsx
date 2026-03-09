@@ -1,8 +1,6 @@
 "use client";
 
 import { createContext, useContext, useCallback, useRef, useEffect, type ReactNode } from "react";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 
 type BroadcastEvent = {
   type: "operation_insert" | "operation_update" | "operation_delete" | "operation_batch";
@@ -23,36 +21,32 @@ function generateClientId() {
 }
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {
-  const supabaseRef = useRef(createSupabaseBrowserClient());
-  const channelRef = useRef<RealtimeChannel | null>(null);
+  const channelRef = useRef<BroadcastChannel | null>(null);
   const subscribersRef = useRef<Set<(event: BroadcastEvent) => void>>(new Set());
   const clientIdRef = useRef(generateClientId());
 
   useEffect(() => {
-    const supabase = supabaseRef.current;
     const clientId = clientIdRef.current;
 
-    channelRef.current = supabase
-      .channel("ops-broadcast", {
-        config: {
-          broadcast: { self: false },
-        },
-      })
-      .on("broadcast", { event: "sync" }, ({ payload }) => {
-        const event = payload as BroadcastEvent;
+    try {
+      const channel = new BroadcastChannel("ops-broadcast");
+      channelRef.current = channel;
+
+      channel.onmessage = (e) => {
+        const event = e.data as BroadcastEvent;
         if (event.senderId !== clientId) {
           subscribersRef.current.forEach((cb) => cb(event));
         }
-      })
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          console.log("[Realtime] Broadcast channel connected. Client ID:", clientId);
-        }
-      });
+      };
+
+      console.log("[Realtime] BroadcastChannel connected. Client ID:", clientId);
+    } catch {
+      console.warn("[Realtime] BroadcastChannel not supported.");
+    }
 
     return () => {
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        channelRef.current.close();
         channelRef.current = null;
       }
     };
@@ -65,11 +59,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
         payload,
         senderId: clientIdRef.current,
       };
-      channelRef.current.send({
-        type: "broadcast",
-        event: "sync",
-        payload: event,
-      });
+      channelRef.current.postMessage(event);
       console.log("[Realtime] Broadcast sent:", type);
     }
   }, []);
