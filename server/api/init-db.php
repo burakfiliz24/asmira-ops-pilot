@@ -19,7 +19,7 @@ try {
             name VARCHAR(255) NOT NULL,
             role VARCHAR(20) NOT NULL DEFAULT 'user',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Çekiciler
@@ -29,7 +29,7 @@ try {
             plate VARCHAR(50) NOT NULL,
             category VARCHAR(50) NOT NULL DEFAULT 'asmira',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Dorseler
@@ -39,7 +39,7 @@ try {
             plate VARCHAR(50) NOT NULL,
             category VARCHAR(50) NOT NULL DEFAULT 'asmira',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Araç Setleri
@@ -49,7 +49,7 @@ try {
             truck_id VARCHAR(50) NOT NULL,
             trailer_id VARCHAR(50) NOT NULL,
             category VARCHAR(50) NOT NULL DEFAULT 'asmira'
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Araç Evrakları
@@ -64,7 +64,7 @@ try {
             file_path VARCHAR(500),
             expiry_date DATE,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Şoförler
@@ -75,7 +75,7 @@ try {
             tc_no VARCHAR(20) NOT NULL,
             phone VARCHAR(30) NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Şoför Evrakları
@@ -89,7 +89,7 @@ try {
             file_path VARCHAR(500),
             expiry_date DATE,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Operasyonlar
@@ -110,7 +110,7 @@ try {
             agent_note TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Dilekçe Kategorileri
@@ -121,7 +121,7 @@ try {
             description TEXT,
             icon VARCHAR(50) DEFAULT 'FileText',
             slug VARCHAR(100) NOT NULL
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Dilekçe Şablonları
@@ -134,7 +134,7 @@ try {
             category VARCHAR(100) NOT NULL,
             is_default TINYINT DEFAULT 0,
             created_at BIGINT
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // Tedarikçi Firmaları (JSON blob)
@@ -143,7 +143,7 @@ try {
             id INT PRIMARY KEY DEFAULT 1,
             data LONGTEXT NOT NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     ");
 
     // logs dizini oluştur

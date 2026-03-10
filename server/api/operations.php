@@ -34,7 +34,7 @@ if ($method === 'POST') {
         $body['vesselName'],
         $body['vesselType'] ?? 'ship',
         $body['imoNumber'] ?? null,
-        $body['quantity'],
+        $body['quantity'] ?? 0,
         $body['unit'] ?? 'MT',
         $body['loadingPlace'] ?? null,
         $body['port'],

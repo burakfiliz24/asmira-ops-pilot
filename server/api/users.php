@@ -10,7 +10,7 @@ $db = getDb();
 
 // GET - Tüm kullanıcıları getir
 if ($method === 'GET') {
-    $stmt = $db->query("SELECT id, username, password, name, role FROM users ORDER BY created_at");
+    $stmt = $db->query("SELECT id, username, name, role FROM users ORDER BY created_at");
     jsonResponse($stmt->fetchAll());
 }
 
