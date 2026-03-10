@@ -17,6 +17,7 @@ if ($method === 'GET') {
 // POST
 if ($method === 'POST') {
     $body = getJsonBody();
+    validateRequired($body, ['truckId', 'trailerId']);
     $id = $body['id'] ?? ('set_' . ($body['category'] ?? 'asmira') . '_' . time() . rand(100, 999));
 
     $stmt = $db->prepare("INSERT INTO vehicle_sets (id, truck_id, trailer_id, category) VALUES (?, ?, ?, ?)");
@@ -34,5 +35,5 @@ if ($method === 'DELETE') {
     jsonResponse(['success' => true]);
 }
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Araç seti işlemi hatası');
 }

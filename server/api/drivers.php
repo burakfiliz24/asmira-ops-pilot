@@ -22,6 +22,7 @@ if ($method === 'GET') {
 // POST
 if ($method === 'POST') {
     $body = getJsonBody();
+    validateRequired($body, ['name', 'tcNo', 'phone']);
     $id = $body['id'] ?? ('driver_' . time() . rand(100, 999));
 
     $stmt = $db->prepare("INSERT INTO drivers (id, name, tc_no, phone) VALUES (?, ?, ?, ?)");
@@ -58,5 +59,5 @@ if ($method === 'DELETE') {
     jsonResponse(['success' => true]);
 }
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Şoför işlemi hatası');
 }

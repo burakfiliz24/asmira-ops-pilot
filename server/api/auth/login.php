@@ -9,23 +9,29 @@ if (getMethod() !== 'POST') {
 
 try {
     $body = getJsonBody();
-    $username = $body['username'] ?? '';
-    $password = $body['password'] ?? '';
+    validateRequired($body, ['username', 'password']);
 
-    if (!$username || !$password) {
-        jsonResponse(['error' => 'Kullanıcı adı ve şifre gerekli'], 400);
-    }
+    $username = sanitize($body['username']);
+    $password = $body['password'];
 
     $db = getDb();
-    $stmt = $db->prepare("SELECT id, username, name, role FROM users WHERE LOWER(username) = LOWER(?) AND password = ?");
-    $stmt->execute([$username, $password]);
+    $stmt = $db->prepare("SELECT id, username, password, name, role FROM users WHERE LOWER(username) = LOWER(?)");
+    $stmt->execute([$username]);
     $user = $stmt->fetch();
 
-    if (!$user) {
+    if (!$user || !verifyPassword($password, $user['password'])) {
         jsonResponse(['error' => 'Kullanıcı adı veya şifre hatalı'], 401);
     }
 
+    // Eğer eski plain-text şifre ise hash'e yükselt
+    if (PASSWORD_HASH_ENABLED && strpos($user['password'], '$2y$') !== 0) {
+        $hashed = hashPassword($password);
+        $db->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$hashed, $user['id']]);
+    }
+
+    // Şifreyi yanıtta gönderme
+    unset($user['password']);
     jsonResponse($user);
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Giriş hatası');
 }

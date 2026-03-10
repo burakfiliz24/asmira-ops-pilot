@@ -22,6 +22,7 @@ if ($method === 'GET') {
 // POST - Yeni operasyon oluştur
 if ($method === 'POST') {
     $body = getJsonBody();
+    validateRequired($body, ['vesselName', 'port', 'date']);
     $id = $body['id'] ?? ('op_' . time() . rand(100, 999));
 
     $stmt = $db->prepare("
@@ -91,5 +92,5 @@ if ($method === 'DELETE') {
     jsonResponse(['success' => true]);
 }
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Operasyon işlemi hatası');
 }

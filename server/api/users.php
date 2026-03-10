@@ -17,17 +17,19 @@ if ($method === 'GET') {
 // POST - Yeni kullanıcı oluştur
 if ($method === 'POST') {
     $body = getJsonBody();
+    validateRequired($body, ['username', 'password', 'name']);
     $id = 'user_' . time() . rand(100, 999);
 
     $stmt = $db->prepare("SELECT id FROM users WHERE LOWER(username) = LOWER(?)");
-    $stmt->execute([$body['username']]);
+    $stmt->execute([sanitize($body['username'])]);
     if ($stmt->fetch()) {
         jsonResponse(['error' => 'Bu kullanıcı adı zaten mevcut'], 409);
     }
 
+    $hashedPassword = hashPassword($body['password']);
     $stmt = $db->prepare("INSERT INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$id, $body['username'], $body['password'], $body['name'], $body['role'] ?? 'user']);
-    jsonResponse(['id' => $id, ...$body], 201);
+    $stmt->execute([$id, sanitize($body['username']), $hashedPassword, sanitize($body['name']), $body['role'] ?? 'user']);
+    jsonResponse(['id' => $id, 'username' => $body['username'], 'name' => $body['name'], 'role' => $body['role'] ?? 'user'], 201);
 }
 
 // PUT - Kullanıcı güncelle
@@ -43,7 +45,8 @@ if ($method === 'PUT') {
     foreach ($body as $key => $val) {
         if ($key !== 'id' && in_array($key, $allowed)) {
             $fields[] = "$key = ?";
-            $values[] = $val;
+            // Şifre güncelleniyorsa hash'le
+            $values[] = ($key === 'password') ? hashPassword($val) : $val;
         }
     }
 
@@ -78,5 +81,5 @@ if ($method === 'DELETE') {
     jsonResponse(['success' => true]);
 }
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Kullanıcı işlemi hatası');
 }

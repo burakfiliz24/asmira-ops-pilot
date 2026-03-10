@@ -19,6 +19,16 @@ if (!$file || !$ownerId || !$ownerType || !$docType) {
     jsonResponse(['error' => 'Eksik parametreler'], 400);
 }
 
+// Dosya uzantı kontrolü
+if (!isAllowedExtension($file['name'])) {
+    jsonResponse(['error' => 'İzin verilmeyen dosya türü. İzinli: ' . implode(', ', ALLOWED_EXTENSIONS)], 400);
+}
+
+// Dosya boyut kontrolü
+if ($file['size'] > MAX_UPLOAD_SIZE) {
+    jsonResponse(['error' => 'Dosya boyutu çok büyük. Maks: ' . (MAX_UPLOAD_SIZE / 1024 / 1024) . 'MB'], 400);
+}
+
 // Klasör oluştur
 $ownerDir = UPLOAD_DIR . "/$ownerType/$ownerId";
 if (!is_dir($ownerDir)) {
@@ -69,5 +79,5 @@ if ($ownerType === 'driver') {
 jsonResponse(['success' => true, 'fileName' => $file['name'], 'filePath' => $relativePath]);
 
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Dosya yükleme hatası');
 }

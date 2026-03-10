@@ -17,6 +17,7 @@ if ($method === 'GET') {
 // POST
 if ($method === 'POST') {
     $body = getJsonBody();
+    validateRequired($body, ['shortName', 'name', 'category']);
     $id = $body['id'] ?? ('tpl_' . time() . rand(100, 999));
 
     $stmt = $db->prepare("INSERT INTO petition_templates (id, short_name, name, default_text, category, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -72,5 +73,5 @@ if ($method === 'DELETE') {
     jsonResponse(['success' => true]);
 }
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Dilekçe şablonu hatası');
 }

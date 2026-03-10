@@ -17,6 +17,7 @@ if ($method === 'GET') {
 // POST
 if ($method === 'POST') {
     $body = getJsonBody();
+    validateRequired($body, ['title', 'slug']);
     $id = $body['id'] ?? ('cat_' . time() . rand(100, 999));
 
     $stmt = $db->prepare("INSERT INTO petition_categories (id, title, description, icon, slug) VALUES (?, ?, ?, ?, ?)");
@@ -60,5 +61,5 @@ if ($method === 'DELETE') {
     jsonResponse(['success' => true]);
 }
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Dilekçe kategorisi hatası');
 }

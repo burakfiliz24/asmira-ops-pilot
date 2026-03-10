@@ -146,16 +146,23 @@ try {
         )
     ");
 
+    // logs dizini oluştur
+    $logDir = __DIR__ . '/../logs';
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0755, true);
+    }
+
     // Varsayılan admin kullanıcısı
     $stmt = $db->prepare("SELECT id FROM users WHERE username = ?");
     $stmt->execute(['asmira']);
     if (!$stmt->fetch()) {
+        $hashedPass = hashPassword('123');
         $db->prepare("INSERT INTO users (id, username, password, name, role) VALUES (?, ?, ?, ?, ?)")
-           ->execute(['user_1', 'asmira', '123', 'Asmira Operasyon', 'admin']);
+           ->execute(['user_1', 'asmira', $hashedPass, 'Asmira Operasyon', 'admin']);
     }
 
-    jsonResponse(['success' => true, 'message' => 'Veritabanı tabloları oluşturuldu']);
+    jsonResponse(['success' => true, 'message' => 'Veritabanı tabloları oluşturuldu ve admin kullanıcısı hazır']);
 
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Veritabanı başlatılamadı', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Veritabanı başlatılamadı');
 }

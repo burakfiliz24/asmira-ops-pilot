@@ -39,5 +39,5 @@ if ($method === 'PUT') {
 }
 
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Tedarikçi firma hatası');
 }

@@ -64,5 +64,5 @@ if ($method === 'DELETE') {
 }
 
 } catch (Exception $e) {
-    jsonResponse(['error' => 'Sunucu hatası', 'details' => $e->getMessage()], 500);
+    errorResponse($e, 'Evrak güncelleme hatası');
 }
