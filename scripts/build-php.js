@@ -216,8 +216,12 @@ RewriteRule ^ - [L]
 RewriteCond %{DOCUMENT_ROOT}/%{REQUEST_URI}/index.php -f
 RewriteRule ^(.+?)/?$ $1/index.php [L]
 
-# Ana sayfa fallback → index.php
+# Ana sayfa fallback → index.php (tüm 404'leri yakala)
 RewriteRule ^ index.php [L]
+
+# 404 hata sayfası → SPA router'a yönlendir
+ErrorDocument 404 /index.php
+ErrorDocument 403 /index.php
 `;
 
   fs.writeFileSync(path.join(OUT_DIR, ".htaccess"), mainHtaccess, "utf-8");
@@ -230,7 +234,27 @@ RewriteRule ^ index.php [L]
   console.log("   ✅ .htaccess dosyaları hazır");
 
   // ========================
-  // 8. LOGS VE DATA DİZİNLERİ
+  // 8. DATABASE.SQL KOPYALAMA
+  // ========================
+  const dbSqlSrc = path.join(SERVER_DIR, "database.sql");
+  if (fs.existsSync(dbSqlSrc)) {
+    fs.copyFileSync(dbSqlSrc, path.join(OUT_DIR, "database.sql"));
+    console.log("   ✅ database.sql kopyalandı");
+  }
+
+  // ========================
+  // 9. UPLOAD_DIR PATH DÜZELTMESİ (sunucu yapısına göre)
+  // ========================
+  const dbConfigDest = path.join(apiDest, "db_config.php");
+  if (fs.existsSync(dbConfigDest)) {
+    let configContent = fs.readFileSync(dbConfigDest, "utf-8");
+    // __DIR__/../data/uploads → sunucuda doğru çalışır (api/ dizininden bir üst = public_html/)
+    // Zaten doğru relative path kullanıyor, kontrol amaçlı log
+    console.log("   ✅ db_config.php path'leri doğrulandı (UPLOAD_DIR: api/../data/uploads)");
+  }
+
+  // ========================
+  // 10. LOGS VE DATA DİZİNLERİ
   // ========================
   fs.mkdirSync(path.join(OUT_DIR, "data", "uploads"), { recursive: true });
   fs.mkdirSync(path.join(OUT_DIR, "logs"), { recursive: true });

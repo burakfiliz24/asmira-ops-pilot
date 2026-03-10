@@ -79,8 +79,8 @@ function getDb(): PDO {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         // Gerçek prepared statements kullan (SQL injection koruması)
         PDO::ATTR_EMULATE_PREPARES   => false,
-        // Bağlantı zaman aşımı (saniye)
-        PDO::ATTR_TIMEOUT            => 5,
+        // Bağlantı zaman aşımı (saniye) - MariaDB/MySQL için
+        PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 5,
     ]);
 
     // MariaDB/MySQL özel ayarlar
