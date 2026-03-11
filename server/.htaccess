@@ -8,14 +8,20 @@ RewriteEngine On
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
 
-# Hassas dosyalara erişimi engelle (config, log, env dosyaları)
+# Hassas dosyalara erişimi engelle
 <FilesMatch "(db_config|config|\.env|\.log|\.sql|\.ini)">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
 </FilesMatch>
 
-# data/ dizinine erişimi engelle (yüklenen dosyalar API üzerinden serve edilir)
+# includes/ dizinine erişimi engelle
+RewriteRule ^includes/ - [F,L]
+
+# pages/ dizinine doğrudan erişimi engelle
+RewriteRule ^pages/ - [F,L]
+
+# data/ dizinine erişimi engelle
 RewriteRule ^data/ - [F,L]
 
 # logs/ dizinine erişimi engelle
@@ -37,13 +43,17 @@ RewriteRule ^logs/ - [F,L]
     ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
-# API isteklerini PHP'ye yönlendir
-RewriteRule ^api/(.*)$ api/$1 [L]
+# API istekleri - mevcut .htaccess'e yönlendir
+RewriteRule ^api/ - [L]
 
-# Mevcut dosya veya dizin ise dokunma
+# Statik dosyalar (assets, images vs.) doğrudan serve et
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# SPA fallback - tüm diğer istekleri index.html'e yönlendir
-RewriteRule ^ index.html [L]
+# Tüm diğer istekleri front controller'a yönlendir
+RewriteRule ^ index.php [L]
+
+# Custom Error Documents
+ErrorDocument 404 /index.php
+ErrorDocument 403 /index.php

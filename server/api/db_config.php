@@ -72,16 +72,17 @@ function getDb(): PDO {
         DB_HOST, DB_PORT, DB_NAME, DB_CHARSET
     );
 
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-        // Hata modunu exception olarak ayarla
+    $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        // Sonuçları associative array olarak döndür
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        // Gerçek prepared statements kullan (SQL injection koruması)
         PDO::ATTR_EMULATE_PREPARES   => false,
-        // Bağlantı zaman aşımı (saniye) - MariaDB/MySQL için
-        PDO::MYSQL_ATTR_CONNECT_TIMEOUT => 5,
-    ]);
+    ];
+    // Bağlantı zaman aşımı (saniye) - pdo_mysql yüklüyse
+    if (defined('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')) {
+        $options[PDO::MYSQL_ATTR_CONNECT_TIMEOUT] = 2;
+    }
+
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 
     // MariaDB/MySQL özel ayarlar
     $pdo->exec("SET NAMES " . DB_CHARSET);
