@@ -45,7 +45,16 @@ require_once __DIR__ . '/../includes/header.php';
                 <span class="text-xs font-bold text-white sm:text-sm" id="kpiTonaj">0</span>
                 <span class="text-[8px] text-white/50 sm:text-[10px]">MT</span>
             </div>
+            <div id="kpiLitreWrap" class="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 backdrop-blur-md">
+                <div class="h-2 w-2 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]"></div>
+                <span class="text-xs font-medium text-white/70">Litre</span>
+                <span class="text-sm font-bold text-white" id="kpiLitre">0</span>
+                <span class="text-[10px] text-white/50">LT</span>
+            </div>
         </div>
+
+        <!-- Document Expiry Alert -->
+        <div id="docExpiryAlert" class="mx-3 mb-2 hidden sm:mx-4"></div>
 
         <!-- Calendar Grid -->
         <div class="flex flex-1 w-full flex-col overflow-hidden px-0 pb-2 sm:px-4 sm:pb-4">
@@ -169,7 +178,117 @@ let dragId = null;
 document.addEventListener('DOMContentLoaded', async () => {
     await loadOperations();
     renderCalendar();
+    loadDocExpiryAlert();
 });
+
+// ============ DOCUMENT EXPIRY ALERT ============
+const DEFAULT_VEHICLE_DOCS = [
+    {type:'ruhsat',label:'Ruhsat'},{type:'tasitKarti',label:'Taşıt Kartı'},{type:'t9Adr',label:'T9 ADR'},
+    {type:'trafikSigortasi',label:'Trafik Sigortası'},{type:'tehlikeliMaddeSigortasi',label:'Tehlikeli Madde Sigortası'},
+    {type:'kasko',label:'Kasko'},{type:'tuvturk',label:'TÜVTÜRK'},{type:'egzozEmisyon',label:'Egzoz Emisyon'},
+    {type:'sayacKalibrasyon',label:'Sayaç Kalibrasyon'},{type:'takografKalibrasyon',label:'Takograf Kalibrasyon'},
+    {type:'faaliyetBelgesi',label:'Faaliyet Belgesi'},{type:'yetkiBelgesi',label:'Yetki Belgesi'},
+    {type:'hortumBasin',label:'Hortum Basın.'},{type:'tankMuayeneSertifikasi',label:'Tank Muayene Sertifikası'},
+    {type:'vergiLevhasi',label:'Vergi Levhası'},
+];
+const DEFAULT_DRIVER_DOCS = [
+    {type:'kimlik',label:'Kimlik'},{type:'ehliyet',label:'Ehliyet'},{type:'src5Psikoteknik',label:'SRC 5 Psikoteknik'},
+    {type:'adliSicil',label:'Adli Sicil'},{type:'iseGirisBildirge',label:'İşe Giriş Bildirgesi'},
+    {type:'ikametgah',label:'İkametgah'},{type:'kkdZimmet',label:'KKD Zimmet Tutanağı'},
+    {type:'saglikMuayene',label:'Sağlık Muayene'},{type:'isgEgitimBelgesi',label:'İSG Eğitim Belgesi'},
+    {type:'yanginEgitimSertifikasi',label:'Yangın Eğitim Sertifikası'},
+];
+function ensureDocs(docs, defaults) {
+    if (!docs || docs.length === 0) return defaults.map(d => ({ ...d, fileName: null, filePath: null, expiryDate: null }));
+    return docs;
+}
+
+let docAlertExpanded = true;
+
+async function loadDocExpiryAlert() {
+    const container = document.getElementById('docExpiryAlert');
+    try {
+        const [trucks, trailers, drivers] = await Promise.all([
+            loadTrucksWithStore(), loadTrailersWithStore(), loadDriversWithStore(),
+        ]);
+        const today = new Date();
+        const warningDays = 15;
+        const expiring = [];
+
+        trucks.forEach(t => {
+            ensureDocs(t.documents, DEFAULT_VEHICLE_DOCS).forEach(doc => {
+                if (doc.expiryDate) {
+                    const diff = Math.ceil((new Date(doc.expiryDate) - today) / (1000*60*60*24));
+                    if (diff <= warningDays && diff >= -7) {
+                        expiring.push({ owner: t.plate + ' (Araç)', docName: doc.label, expiryDate: doc.expiryDate, daysLeft: diff, type: 'vehicle' });
+                    }
+                }
+            });
+        });
+        trailers.forEach(t => {
+            ensureDocs(t.documents, DEFAULT_VEHICLE_DOCS).forEach(doc => {
+                if (doc.expiryDate) {
+                    const diff = Math.ceil((new Date(doc.expiryDate) - today) / (1000*60*60*24));
+                    if (diff <= warningDays && diff >= -7) {
+                        expiring.push({ owner: t.plate + ' (Dorse)', docName: doc.label, expiryDate: doc.expiryDate, daysLeft: diff, type: 'vehicle' });
+                    }
+                }
+            });
+        });
+        drivers.forEach(dr => {
+            ensureDocs(dr.documents, DEFAULT_DRIVER_DOCS).forEach(doc => {
+                if (doc.expiryDate) {
+                    const diff = Math.ceil((new Date(doc.expiryDate) - today) / (1000*60*60*24));
+                    if (diff <= warningDays && diff >= -7) {
+                        expiring.push({ owner: dr.name, docName: doc.label, expiryDate: doc.expiryDate, daysLeft: diff, type: 'driver' });
+                    }
+                }
+            });
+        });
+
+        expiring.sort((a, b) => a.daysLeft - b.daysLeft);
+        if (expiring.length === 0) return;
+
+        const expiredCount = expiring.filter(d => d.daysLeft < 0).length;
+        const urgentCount = expiring.filter(d => d.daysLeft >= 0 && d.daysLeft <= 7).length;
+        container.classList.remove('hidden');
+        renderDocAlert(container, expiring, expiredCount, urgentCount);
+    } catch(e) { /* API offline, no alert */ }
+}
+
+function renderDocAlert(container, expiring, expiredCount, urgentCount) {
+    let subText = '';
+    if (expiredCount > 0) subText += `<span class="text-red-400">${expiredCount} süresi dolmuş</span>`;
+    if (expiredCount > 0 && urgentCount > 0) subText += ' • ';
+    if (urgentCount > 0) subText += `<span class="text-amber-400">${urgentCount} acil</span>`;
+
+    let listHtml = '';
+    if (docAlertExpanded) {
+        listHtml = `<div class="border-t border-white/10 px-4 py-3"><div class="max-h-48 space-y-2 overflow-y-auto">`;
+        expiring.forEach(doc => {
+            const cls = doc.daysLeft < 0 ? 'border-red-500/30 bg-red-500/10' : doc.daysLeft <= 7 ? 'border-amber-500/30 bg-amber-500/10' : 'border-white/10 bg-white/5';
+            const iconCls = doc.daysLeft < 0 ? 'text-red-400' : doc.daysLeft <= 7 ? 'text-amber-400' : 'text-white/40';
+            const badgeCls = doc.daysLeft < 0 ? 'bg-red-500/20 text-red-400' : doc.daysLeft <= 7 ? 'bg-amber-500/20 text-amber-400' : 'bg-white/10 text-white/60';
+            const badgeText = doc.daysLeft < 0 ? `${Math.abs(doc.daysLeft)} gün geçti` : doc.daysLeft === 0 ? 'Bugün' : `${doc.daysLeft} gün`;
+            const typeLabel = doc.type === 'driver' ? 'Şoför' : 'Araç';
+            listHtml += `<div class="flex items-center justify-between rounded-lg border p-3 ${cls}"><div class="flex items-center gap-3"><i data-lucide="clock" class="h-4 w-4 ${iconCls}"></i><div><div class="text-sm font-medium">${escapeHtml(doc.owner)} - ${escapeHtml(doc.docName)}</div><div class="text-xs text-white/50">${typeLabel} • ${new Date(doc.expiryDate).toLocaleDateString('tr-TR')}</div></div></div><div class="rounded-full px-2 py-1 text-xs font-semibold ${badgeCls}">${badgeText}</div></div>`;
+        });
+        listHtml += `</div><div class="mt-3 flex gap-2"><a href="/vehicle-documents/asmira" class="flex-1 rounded-lg border border-white/10 bg-white/5 py-2 text-center text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white">Araç Evrakları</a><a href="/driver-documents" class="flex-1 rounded-lg border border-white/10 bg-white/5 py-2 text-center text-xs font-medium text-white/70 transition hover:bg-white/10 hover:text-white">Şoför Evrakları</a></div></div>`;
+    }
+
+    container.innerHTML = `<div class="overflow-hidden rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-red-500/5">
+        <button type="button" onclick="docAlertExpanded=!docAlertExpanded;renderDocAlert(document.getElementById('docExpiryAlert'),window._expiringDocs,${expiredCount},${urgentCount});lucide.createIcons()" class="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-white/5">
+            <div class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/25 to-red-500/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"><i data-lucide="file-warning" class="h-5 w-5 text-amber-400"></i></div>
+                <div><div class="flex items-center gap-2 font-bold text-white">Evrak Süresi Uyarısı <span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-semibold text-amber-400">${expiring.length}</span></div><div class="text-xs text-white/50">${subText}</div></div>
+            </div>
+            <i data-lucide="chevron-right" class="h-5 w-5 text-white/40 transition-transform ${docAlertExpanded ? 'rotate-90' : ''}"></i>
+        </button>
+        ${listHtml}
+    </div>`;
+    window._expiringDocs = expiring;
+    lucide.createIcons({nodes:[container]});
+}
 
 async function loadOperations() {
     try {
@@ -208,6 +327,16 @@ function renderCalendar() {
     document.getElementById('kpiCount').textContent = monthOps.length;
     const totalTonaj = monthOps.filter(op => op.unit === 'MT').reduce((sum, op) => sum + Number(op.quantity || 0), 0);
     document.getElementById('kpiTonaj').textContent = totalTonaj.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+    const totalLitre = monthOps.filter(op => op.unit === 'L').reduce((sum, op) => sum + Number(op.quantity || 0), 0);
+    const litreWrap = document.getElementById('kpiLitreWrap');
+    if (totalLitre > 0) { litreWrap.classList.remove('hidden'); litreWrap.classList.add('flex'); document.getElementById('kpiLitre').textContent = totalLitre.toLocaleString('tr-TR', { maximumFractionDigits: 0 }); }
+    else { litreWrap.classList.add('hidden'); litreWrap.classList.remove('flex'); }
+
+    // Conflict detection
+    const vesselConflicts = new Map();
+    operations.forEach(op => { const key = op.date + '_' + (op.vesselName||'').toLowerCase().trim(); if (!vesselConflicts.has(key)) vesselConflicts.set(key, new Set()); vesselConflicts.get(key).add(op.id); });
+    const conflictIds = new Set();
+    vesselConflicts.forEach((ids) => { if (ids.size > 1) ids.forEach(id => conflictIds.add(id)); });
 
     // 6 weeks × 7 days
     for (let i = 0; i < 42; i++) {
@@ -252,7 +381,8 @@ function renderCalendar() {
                 const statusCls = STATUS_CLASSES[op.status] || STATUS_CLASSES.planned;
                 const strikethrough = (op.status === 'completed' || op.status === 'cancelled') ? 'line-through opacity-70' : '';
 
-                html += `<div class="group/card relative z-10 flex w-full cursor-grab select-none flex-col rounded-lg border px-2 py-2 text-white shadow-md backdrop-blur-md transition ${statusCls} ${
+                const hasConflict = conflictIds.has(op.id);
+                html += `<div class="group/card relative z-10 flex w-full cursor-grab select-none flex-col rounded-lg border px-2 py-2 text-white shadow-md backdrop-blur-md transition ${statusCls} ${hasConflict ? 'ring-1 ring-red-400/50' : ''} ${
                     isYacht ? 'border-purple-500/20 bg-purple-500/[0.08]' : 'border-white/10 bg-white/[0.06]'
                 }" draggable="true" ondragstart="startDrag(event, '${op.id}')" oncontextmenu="showOpContext(event, '${op.id}')">
                     <button type="button" onclick="event.stopPropagation(); deleteOperation('${op.id}')" class="absolute right-1 top-0.5 flex h-5 w-5 items-center justify-center rounded-md border border-red-500/30 bg-red-500/20 text-red-100 opacity-0 transition group-hover/card:opacity-100 hover:bg-red-500/30"><i data-lucide="x" class="h-3 w-3"></i></button>

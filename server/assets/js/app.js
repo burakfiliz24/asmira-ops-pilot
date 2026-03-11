@@ -169,6 +169,38 @@ function hideLoading(elementId) {
     if (el) el.innerHTML = '';
 }
 
+// ============ SHARED DOCUMENT STORE (localStorage) ============
+const DOC_STORE_KEYS = { trucks: 'asmira-trucks', trailers: 'asmira-trailers', drivers: 'asmira-drivers' };
+
+function saveDocStore(key, data) {
+    try { localStorage.setItem(DOC_STORE_KEYS[key], JSON.stringify(data)); } catch(e) {}
+}
+function loadDocStore(key) {
+    try { const d = localStorage.getItem(DOC_STORE_KEYS[key]); return d ? JSON.parse(d) : null; } catch(e) { return null; }
+}
+
+async function loadTrucksWithStore() {
+    try {
+        const data = await apiRequest('/api/trucks');
+        if (data && data.length > 0) { saveDocStore('trucks', data); return data; }
+    } catch(e) {}
+    return loadDocStore('trucks') || [];
+}
+async function loadTrailersWithStore() {
+    try {
+        const data = await apiRequest('/api/trailers');
+        if (data && data.length > 0) { saveDocStore('trailers', data); return data; }
+    } catch(e) {}
+    return loadDocStore('trailers') || [];
+}
+async function loadDriversWithStore() {
+    try {
+        const data = await apiRequest('/api/drivers');
+        if (data && data.length > 0) { saveDocStore('drivers', data); return data; }
+    } catch(e) {}
+    return loadDocStore('drivers') || [];
+}
+
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', function() {
     // Re-initialize Lucide icons for any dynamic content

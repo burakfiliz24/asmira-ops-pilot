@@ -16,9 +16,9 @@
 // ========================
 define('DB_HOST', 'localhost');
 define('DB_PORT', 3306);
-define('DB_NAME', 'asmira_ops');
-define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_NAME', 'c0opsdb');
+define('DB_USER', 'c0ops');
+define('DB_PASS', 'M29i_VwcAAtkP');
 define('DB_CHARSET', 'utf8mb4');
 
 // ========================

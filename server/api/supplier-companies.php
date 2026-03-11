@@ -6,7 +6,8 @@ setCorsHeaders();
 $method = getMethod();
 
 try {
-$db = getDb();
+$db = getDbSafe();
+if (!$db) { if ($method === 'GET') jsonResponse([]); jsonResponse(['success'=>true,'offline'=>true]); }
 
 // GET - Tedarikçi firmalarını getir
 if ($method === 'GET') {

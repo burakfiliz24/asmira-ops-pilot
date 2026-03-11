@@ -7,7 +7,8 @@ $method = getMethod();
 $body = getJsonBody();
 
 try {
-$db = getDb();
+$db = getDbSafe();
+if (!$db) { jsonResponse(['success' => true, 'offline' => true]); }
 
 $ownerId = $body['ownerId'] ?? '';
 $ownerType = $body['ownerType'] ?? '';

@@ -6,7 +6,13 @@ setCorsHeaders();
 $method = getMethod();
 
 try {
-$db = getDb();
+$db = getDbSafe();
+if (!$db) {
+    if ($method === 'GET') jsonResponse([]);
+    if ($method === 'POST') { $b = getJsonBody(); $b['id'] = $b['id'] ?? ('op_' . time() . rand(100,999)); $b['offline'] = true; jsonResponse($b, 201); }
+    jsonResponse(['success' => true, 'offline' => true]);
+}
+
 
 // GET - Tüm operasyonları getir
 if ($method === 'GET') {

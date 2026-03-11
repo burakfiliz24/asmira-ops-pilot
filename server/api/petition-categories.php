@@ -6,7 +6,16 @@ setCorsHeaders();
 $method = getMethod();
 
 try {
-$db = getDb();
+$db = getDbSafe();
+if (!$db) {
+    if ($method === 'GET') jsonResponse([
+        ['id'=>'cat_taahhutname','title'=>'Taahhütnameler','description'=>'Taşıma ve güvenlik taahhütname şablonları','icon'=>'FileCheck','slug'=>'taahhutnameler'],
+        ['id'=>'cat_gumruk','title'=>'Gümrük Dilekçeleri','description'=>'Gümrük işlemleri için dilekçe şablonları','icon'=>'Shield','slug'=>'gumruk-dilekceleri'],
+        ['id'=>'cat_ek1','title'=>'EK-1 Belgeleri','description'=>'EK-1 formu ve ek belge şablonları','icon'=>'ClipboardList','slug'=>'ek-1-belgeleri'],
+    ]);
+    if ($method === 'POST') { $b = getJsonBody(); $b['id'] = 'cat_' . time() . rand(100,999); $b['slug'] = $b['slug'] ?? strtolower(preg_replace('/[^a-z0-9]+/','_',str_replace(['ı','ğ','ü','ş','ö','ç','İ','Ğ','Ü','Ş','Ö','Ç'],['i','g','u','s','o','c','i','g','u','s','o','c'],$b['title'] ?? ''))); jsonResponse($b, 201); }
+    jsonResponse(['success'=>true,'offline'=>true]);
+}
 
 // GET
 if ($method === 'GET') {

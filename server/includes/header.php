@@ -152,6 +152,52 @@ function isActivePage(string $href, string $currentPage): bool {
             <!-- Ocean Scene -->
             <div class="relative mt-2 h-20 w-full overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0b1120]/40"></div>
+                <!-- Stars -->
+                <div class="absolute" style="left:15%;top:10%;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,0.3)"></div>
+                <div class="absolute" style="left:45%;top:6%;width:1.5px;height:1.5px;border-radius:50%;background:rgba(255,255,255,0.2)"></div>
+                <div class="absolute" style="left:75%;top:12%;width:1px;height:1px;border-radius:50%;background:rgba(255,255,255,0.25)"></div>
+                <div class="absolute" style="left:60%;top:3%;width:1.5px;height:1.5px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>
+                <!-- Ship 1 - Large cargo ship -->
+                <div class="ship-bob absolute" style="bottom:8px">
+                    <div class="relative">
+                        <svg width="72" height="42" viewBox="0 0 48 28" fill="none">
+                            <path d="M2,22 L6,26 H42 L46,22 Z" fill="rgba(96,165,250,0.15)" stroke="rgba(96,165,250,0.5)" stroke-width="0.8"/>
+                            <rect x="8" y="17" width="32" height="5" rx="0.5" fill="rgba(96,165,250,0.1)" stroke="rgba(96,165,250,0.35)" stroke-width="0.7"/>
+                            <rect x="14" y="10" width="12" height="7" rx="0.5" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.3)" stroke-width="0.6"/>
+                            <rect class="ship-window" x="16" y="12" width="2.5" height="1.5" rx="0.3" fill="rgba(251,191,36,0.5)"/>
+                            <rect class="ship-window-2" x="20" y="12" width="2.5" height="1.5" rx="0.3" fill="rgba(251,191,36,0.4)"/>
+                            <rect x="28" y="12" width="3" height="5" rx="0.3" fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.3)" stroke-width="0.5"/>
+                            <line x1="28" y1="13.5" x2="31" y2="13.5" stroke="rgba(239,68,68,0.4)" stroke-width="1"/>
+                            <line x1="20" y1="5" x2="20" y2="10" stroke="rgba(148,163,184,0.3)" stroke-width="0.5"/>
+                            <circle cx="20" cy="5" r="1" fill="rgba(239,68,68,0.5)"/>
+                            <line x1="42" y1="18" x2="46" y2="22" stroke="rgba(96,165,250,0.3)" stroke-width="0.5"/>
+                        </svg>
+                        <div class="ship-smoke absolute" style="left:42px;top:10px;width:4px;height:4px;border-radius:50%;background:rgba(148,163,184,0.3)"></div>
+                        <div class="ship-smoke-2 absolute" style="left:44px;top:11px;width:3px;height:3px;border-radius:50%;background:rgba(148,163,184,0.2)"></div>
+                        <div class="ship-smoke-3 absolute" style="left:43px;top:9px;width:3.5px;height:3.5px;border-radius:50%;background:rgba(148,163,184,0.25)"></div>
+                        <div class="ship-wake absolute" style="left:-10px;bottom:2px;height:2px;width:14px;border-radius:9999px;background:linear-gradient(to left,rgba(34,211,238,0.2),transparent)"></div>
+                        <div class="absolute" style="bottom:-4px;left:10%;right:10%;height:5px;border-radius:9999px;background:rgba(96,165,250,0.15);filter:blur(4px)"></div>
+                    </div>
+                </div>
+                <!-- Ship 2 - Smaller vessel -->
+                <div class="ship-bob-2 absolute" style="bottom:10px">
+                    <div class="relative">
+                        <svg width="52" height="32" viewBox="0 0 32 20" fill="none" style="transform:scaleX(-1)">
+                            <path d="M2,16 L4,18 H28 L30,16 Z" fill="rgba(6,182,212,0.12)" stroke="rgba(6,182,212,0.4)" stroke-width="0.7"/>
+                            <rect x="6" y="12" width="20" height="4" rx="0.5" fill="rgba(6,182,212,0.08)" stroke="rgba(6,182,212,0.3)" stroke-width="0.6"/>
+                            <rect x="10" y="7" width="8" height="5" rx="0.5" fill="rgba(6,182,212,0.06)" stroke="rgba(6,182,212,0.25)" stroke-width="0.5"/>
+                            <rect class="ship-window" x="12" y="8.5" width="2" height="1.5" rx="0.3" fill="rgba(251,191,36,0.4)"/>
+                            <rect class="ship-window-2" x="15" y="8.5" width="2" height="1.5" rx="0.3" fill="rgba(251,191,36,0.3)"/>
+                            <rect x="20" y="9" width="2" height="3" rx="0.2" fill="rgba(6,182,212,0.1)" stroke="rgba(6,182,212,0.25)" stroke-width="0.4"/>
+                            <line x1="14" y1="3" x2="14" y2="7" stroke="rgba(148,163,184,0.25)" stroke-width="0.4"/>
+                            <circle cx="14" cy="3" r="0.7" fill="rgba(52,211,153,0.4)"/>
+                        </svg>
+                        <div class="ship-smoke absolute" style="left:8px;top:6px;width:3px;height:3px;border-radius:50%;background:rgba(148,163,184,0.25)"></div>
+                        <div class="ship-smoke-2 absolute" style="left:9px;top:7px;width:2.5px;height:2.5px;border-radius:50%;background:rgba(148,163,184,0.18)"></div>
+                        <div class="ship-wake absolute" style="right:-8px;bottom:2px;height:1.5px;width:10px;border-radius:9999px;background:linear-gradient(to right,rgba(34,211,238,0.15),transparent)"></div>
+                        <div class="absolute" style="bottom:-3px;left:10%;right:10%;height:4px;border-radius:9999px;background:rgba(34,211,238,0.1);filter:blur(3px)"></div>
+                    </div>
+                </div>
                 <!-- Waves -->
                 <svg class="wave-1 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:18px">
                     <path d="M0,12 C100,4 200,20 300,12 C400,4 500,20 600,12 C700,4 800,20 900,12 C1000,4 1100,20 1200,12 L1200,30 L0,30Z" fill="rgba(6,182,212,0.12)"/>
@@ -159,6 +205,9 @@ function isActivePage(string $href, string $currentPage): bool {
                 </svg>
                 <svg class="wave-2 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:14px">
                     <path d="M0,12 C150,20 250,4 400,12 C550,20 650,4 800,12 C950,20 1050,4 1200,12 L1200,30 L0,30Z" fill="rgba(59,130,246,0.1)"/>
+                </svg>
+                <svg class="wave-3 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:8px">
+                    <path d="M0,12 C200,18 300,6 500,12 C700,18 800,6 1000,12 C1100,15 1150,9 1200,12 L1200,30 L0,30Z" fill="rgba(6,182,212,0.08)"/>
                 </svg>
             </div>
         </div>

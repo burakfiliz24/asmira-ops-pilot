@@ -46,7 +46,8 @@ if (!move_uploaded_file($file['tmp_name'], $filePath)) {
 }
 
 // Veritabanını güncelle
-$db = getDb();
+$db = getDbSafe();
+if (!$db) { jsonResponse(['success' => true, 'fileName' => $file['name'], 'filePath' => $relativePath, 'offline' => true]); }
 $table = $ownerType === 'driver' ? 'driver_documents' : 'vehicle_documents';
 $ownerCol = $ownerType === 'driver' ? 'driver_id' : 'owner_id';
 

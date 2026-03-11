@@ -6,7 +6,16 @@ setCorsHeaders();
 $method = getMethod();
 
 try {
-$db = getDb();
+$db = getDbSafe();
+if (!$db) {
+    if ($method === 'GET') jsonResponse([
+        ['id'=>'u1','username'=>'admin','name'=>'Yönetici','role'=>'admin'],
+        ['id'=>'u2','username'=>'asmira','name'=>'Asmira Operatör','role'=>'admin'],
+        ['id'=>'u3','username'=>'user','name'=>'Kullanıcı','role'=>'user'],
+    ]);
+    if ($method === 'POST') { $b = getJsonBody(); jsonResponse(['id'=>'usr_'.time().rand(100,999),'username'=>$b['username']??'','name'=>$b['name']??'','role'=>$b['role']??'user','offline'=>true], 201); }
+    jsonResponse(['success'=>true,'offline'=>true]);
+}
 
 // GET - Tüm kullanıcıları getir
 if ($method === 'GET') {

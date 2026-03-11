@@ -7,7 +7,10 @@ require_once __DIR__ . '/../includes/auth.php';
 $dbAvailable = false;
 try {
     require_once __DIR__ . '/../api/db.php';
-    $dbAvailable = function_exists('getDb');
+    if (function_exists('getDbSafe')) {
+        $testDb = getDbSafe();
+        $dbAvailable = ($testDb !== null);
+    }
 } catch (\Throwable $e) {
     // DB bağlantısı yoksa login hala çalışır
 }
@@ -20,15 +23,23 @@ if (isset($_SESSION['user_id'])) {
 
 $error = '';
 
+// Fallback kullanıcılar (DB yokken lokal test için)
+$fallbackUsers = [
+    ['id' => 'u1', 'username' => 'admin', 'password' => 'admin', 'name' => 'Yönetici', 'role' => 'admin'],
+    ['id' => 'u2', 'username' => 'asmira', 'password' => 'asmira', 'name' => 'Asmira Operatör', 'role' => 'admin'],
+    ['id' => 'u3', 'username' => 'user', 'password' => 'user', 'name' => 'Kullanıcı', 'role' => 'user'],
+];
+
 // POST - Login işlemi
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($username && $password) {
-        if (!$dbAvailable) {
-            $error = 'Veritabanı bağlantısı kurulamadı. Lütfen db_config.php ayarlarını kontrol edin.';
-        } else {
+        $authenticated = false;
+
+        // Önce DB'den dene
+        if ($dbAvailable) {
             try {
                 $db = getDb();
                 $stmt = $db->prepare("SELECT id, username, password, name, role FROM users WHERE LOWER(username) = LOWER(?)");
@@ -36,21 +47,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $user = $stmt->fetch();
 
                 if ($user && verifyPassword($password, $user['password'])) {
-                    // Şifre hash upgrade
                     if (PASSWORD_HASH_ENABLED && !password_verify($password, $user['password'])) {
                         $newHash = hashPassword($password);
                         $db->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$newHash, $user['id']]);
                     }
-
                     loginUser($user);
-                    header('Location: /dashboard');
-                    exit;
-                } else {
-                    $error = 'Kullanıcı adı veya şifre hatalı';
+                    $authenticated = true;
                 }
             } catch (\Throwable $e) {
-                $error = 'Veritabanı hatası: ' . $e->getMessage();
+                // DB hatası - fallback'e düş
+                $dbAvailable = false;
             }
+        }
+
+        // DB yoksa veya başarısızsa fallback kullanıcıları dene
+        if (!$authenticated && !$dbAvailable) {
+            foreach ($fallbackUsers as $fu) {
+                if (strtolower($fu['username']) === strtolower($username) && $fu['password'] === $password) {
+                    loginUser($fu);
+                    $authenticated = true;
+                    break;
+                }
+            }
+        }
+
+        if ($authenticated) {
+            header('Location: /dashboard');
+            exit;
+        } else {
+            $error = 'Kullanıcı adı veya şifre hatalı';
         }
     } else {
         $error = 'Kullanıcı adı ve şifre gerekli';

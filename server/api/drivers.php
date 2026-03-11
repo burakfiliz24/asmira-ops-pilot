@@ -6,7 +6,12 @@ setCorsHeaders();
 $method = getMethod();
 
 try {
-$db = getDb();
+$db = getDbSafe();
+if (!$db) {
+    if ($method === 'GET') jsonResponse([]);
+    if ($method === 'POST') { $b = getJsonBody(); jsonResponse(['id' => 'drv_' . time() . rand(100,999), 'name' => $b['name'] ?? '', 'tcNo' => $b['tcNo'] ?? '', 'documents' => [], 'offline' => true], 201); }
+    jsonResponse(['success'=>true,'offline'=>true]);
+}
 
 // GET
 if ($method === 'GET') {

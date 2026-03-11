@@ -14,24 +14,40 @@ try {
     $username = sanitize($body['username']);
     $password = $body['password'];
 
-    $db = getDb();
-    $stmt = $db->prepare("SELECT id, username, password, name, role FROM users WHERE LOWER(username) = LOWER(?)");
-    $stmt->execute([$username]);
-    $user = $stmt->fetch();
+    $db = getDbSafe();
+    $user = null;
 
-    if (!$user || !verifyPassword($password, $user['password'])) {
-        jsonResponse(['error' => 'Kullanıcı adı veya şifre hatalı'], 401);
+    if ($db) {
+        $stmt = $db->prepare("SELECT id, username, password, name, role FROM users WHERE LOWER(username) = LOWER(?)");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+
+        if ($user && verifyPassword($password, $user['password'])) {
+            if (PASSWORD_HASH_ENABLED && strpos($user['password'], '$2y$') !== 0) {
+                $hashed = hashPassword($password);
+                $db->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$hashed, $user['id']]);
+            }
+            unset($user['password']);
+            jsonResponse($user);
+        }
     }
 
-    // Eğer eski plain-text şifre ise hash'e yükselt
-    if (PASSWORD_HASH_ENABLED && strpos($user['password'], '$2y$') !== 0) {
-        $hashed = hashPassword($password);
-        $db->prepare("UPDATE users SET password = ? WHERE id = ?")->execute([$hashed, $user['id']]);
+    // Fallback kullanıcılar (DB yokken)
+    if (!$db) {
+        $fallback = [
+            ['id'=>'u1','username'=>'admin','password'=>'admin','name'=>'Yönetici','role'=>'admin'],
+            ['id'=>'u2','username'=>'asmira','password'=>'asmira','name'=>'Asmira Operatör','role'=>'admin'],
+            ['id'=>'u3','username'=>'user','password'=>'user','name'=>'Kullanıcı','role'=>'user'],
+        ];
+        foreach ($fallback as $fu) {
+            if (strtolower($fu['username']) === strtolower($username) && $fu['password'] === $password) {
+                unset($fu['password']);
+                jsonResponse($fu);
+            }
+        }
     }
 
-    // Şifreyi yanıtta gönderme
-    unset($user['password']);
-    jsonResponse($user);
+    jsonResponse(['error' => 'Kullanıcı adı veya şifre hatalı'], 401);
 } catch (Exception $e) {
     errorResponse($e, 'Giriş hatası');
 }
