@@ -14,6 +14,7 @@ RewriteRule ^trucks/?$ trucks.php [L,QSA]
 RewriteRule ^trailers/?$ trailers.php [L,QSA]
 RewriteRule ^drivers/?$ drivers.php [L,QSA]
 RewriteRule ^vehicle-sets/?$ vehicle-sets.php [L,QSA]
+RewriteRule ^deliverers/?$ deliverers.php [L,QSA]
 RewriteRule ^init-db/?$ init-db.php [L,QSA]
 
 # Petitions
@@ -25,3 +26,6 @@ RewriteRule ^supplier-companies/?$ supplier-companies.php [L,QSA]
 RewriteRule ^documents/upload/?$ documents/upload.php [L,QSA]
 RewriteRule ^documents/update/?$ documents/update.php [L,QSA]
 RewriteRule ^documents/download/(.+)$ documents/download.php [L,QSA]
+
+# Port Wiki
+RewriteRule ^port-wiki/?$ port-wiki.php [L,QSA]

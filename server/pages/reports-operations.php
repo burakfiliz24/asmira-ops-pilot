@@ -37,33 +37,33 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="grid grid-cols-2 gap-3 px-6 pt-4 sm:grid-cols-5">
             <div class="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center">
                 <div class="text-2xl font-black text-white" id="statTotal">0</div>
-                <div class="text-[10px] font-medium text-white/40">Toplam İkmal</div>
+                <div class="text-xs font-medium text-white/40">Toplam İkmal</div>
             </div>
             <div class="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center">
                 <div class="text-2xl font-black text-cyan-400" id="statMT">0</div>
-                <div class="text-[10px] font-medium text-white/40">Toplam MT</div>
+                <div class="text-xs font-medium text-white/40">Toplam MT</div>
             </div>
             <div class="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center">
                 <div class="text-2xl font-black text-amber-400" id="statL">0</div>
-                <div class="text-[10px] font-medium text-white/40">Toplam L</div>
+                <div class="text-xs font-medium text-white/40">Toplam L</div>
             </div>
             <div class="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center">
                 <div class="text-2xl font-black text-blue-400" id="statShip">0</div>
-                <div class="text-[10px] font-medium text-white/40">Gemi</div>
+                <div class="text-xs font-medium text-white/40">Gemi</div>
             </div>
             <div class="rounded-xl border border-white/10 bg-white/[0.02] p-3 text-center">
                 <div class="text-2xl font-black text-purple-400" id="statYacht">0</div>
-                <div class="text-[10px] font-medium text-white/40">Yat</div>
+                <div class="text-xs font-medium text-white/40">Yat</div>
             </div>
         </div>
 
         <!-- Operations Table -->
         <div class="flex-1 p-4 sm:p-6">
             <div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                <div class="mb-4 flex items-center gap-2 text-sm font-semibold">
-                    <i data-lucide="fuel" class="h-4 w-4 text-cyan-400"></i>
+                <div class="mb-4 flex items-center gap-2 text-base font-semibold">
+                    <i data-lucide="fuel" class="h-5 w-5 text-cyan-400"></i>
                     <span id="tableTitle"></span>
-                    <span class="rounded-full bg-cyan-500/20 px-2 py-0.5 text-[10px] text-cyan-400" id="opsCount">0</span>
+                    <span class="rounded-full bg-cyan-500/20 px-2.5 py-0.5 text-xs font-bold text-cyan-400" id="opsCount">0</span>
                 </div>
                 <div class="overflow-x-auto" id="tableContainer"></div>
             </div>
@@ -143,33 +143,35 @@ function renderAll() {
         return;
     }
 
-    let html = `<table class="w-full text-left text-xs">
+    let html = `<table class="w-full text-left text-sm">
         <thead><tr class="border-b border-white/10 text-white/40">
-            <th class="pb-2.5 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="calendar" class="h-3 w-3"></i> Tarih</div></th>
-            <th class="pb-2.5 pr-4 font-medium">Tür</th>
-            <th class="pb-2.5 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="ship" class="h-3 w-3"></i> Gemi / Yat</div></th>
-            <th class="pb-2.5 pr-4 font-medium">IMO</th>
-            <th class="pb-2.5 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="h-3 w-3"></i> Liman</div></th>
-            <th class="pb-2.5 pr-4 font-medium">Dolum Yeri</th>
-            <th class="pb-2.5 pr-4 font-medium">Miktar</th>
+            <th class="pb-3 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="calendar" class="h-3.5 w-3.5"></i> Tarih</div></th>
+            <th class="pb-3 pr-4 font-medium">Tür</th>
+            <th class="pb-3 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="ship" class="h-3.5 w-3.5"></i> Gemi / Yat</div></th>
+            <th class="pb-3 pr-4 font-medium">IMO</th>
+            <th class="pb-3 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="map-pin" class="h-3.5 w-3.5"></i> Liman</div></th>
+            <th class="pb-3 pr-4 font-medium">Dolum Yeri</th>
+            <th class="pb-3 pr-4 font-medium">Miktar</th>
+            <th class="pb-3 pr-4 font-medium"><div class="flex items-center gap-1.5"><i data-lucide="package" class="h-3.5 w-3.5"></i> Teslimatçı</div></th>
         </tr></thead><tbody>`;
 
     ops.forEach(op => {
         const isYacht = op.vesselType === 'yacht';
         const typeBadge = isYacht
-            ? '<span class="inline-flex items-center gap-1 rounded-full bg-purple-500/20 px-2 py-0.5 text-[10px] font-semibold text-purple-400">⛵ Yat</span>'
-            : '<span class="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2 py-0.5 text-[10px] font-semibold text-blue-400">🚢 Gemi</span>';
+            ? '<span class="inline-flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1 text-xs font-semibold text-purple-400"><span class="text-sm">⛵</span> Yat</span>'
+            : '<span class="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-400"><span class="text-sm">🚢</span> Gemi</span>';
         const nameCls = isYacht ? 'text-purple-300' : 'text-white';
         const d = new Date(op.date);
         const dateStr = d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
         html += `<tr class="border-b border-white/5 transition-colors hover:bg-white/[0.02]">
-            <td class="py-2.5 pr-4 font-medium text-white/70">${dateStr}</td>
-            <td class="py-2.5 pr-4">${typeBadge}</td>
-            <td class="py-2.5 pr-4 font-semibold ${nameCls}">${escapeHtml(op.vesselName || '')}</td>
-            <td class="py-2.5 pr-4 text-white/40">${op.imoNumber || '—'}</td>
-            <td class="py-2.5 pr-4 text-white/60">${escapeHtml(op.port || '')}</td>
-            <td class="py-2.5 pr-4 text-white/50">${escapeHtml(op.loadingPlace || '—')}</td>
-            <td class="py-2.5 pr-4"><span class="font-semibold text-cyan-400">${op.quantity || 0}</span> <span class="text-white/40">${op.unit || 'MT'}</span></td>
+            <td class="py-3 pr-4 font-medium text-white/70">${dateStr}</td>
+            <td class="py-3 pr-4">${typeBadge}</td>
+            <td class="py-3 pr-4 font-semibold ${nameCls}">${escapeHtml(op.vesselName || '')}</td>
+            <td class="py-3 pr-4 text-white/40">${op.imoNumber || '—'}</td>
+            <td class="py-3 pr-4 text-white/60">${escapeHtml(op.port || '')}</td>
+            <td class="py-3 pr-4 text-white/50">${escapeHtml(op.loadingPlace || '—')}</td>
+            <td class="py-3 pr-4"><span class="font-semibold text-cyan-400">${op.quantity || 0}</span> <span class="text-white/40">${op.unit || 'MT'}</span></td>
+            <td class="py-3 pr-4">${op.delivererName ? '<span class="inline-flex items-center gap-1 text-teal-300"><i data-lucide="package" class="h-3.5 w-3.5"></i>' + escapeHtml(op.delivererName) + '</span>' : '<span class="text-white/20">—</span>'}</td>
         </tr>`;
     });
 
@@ -177,11 +179,11 @@ function renderAll() {
     const hasMT = ops.some(o => o.unit === 'MT');
     const hasL = ops.some(o => o.unit === 'L');
     let footerHtml = '';
-    if (hasMT) footerHtml += `<div><span class="text-sm font-bold text-cyan-400">${totalMT.toFixed(1)}</span> <span class="text-xs text-white/40">MT</span></div>`;
-    if (hasL) footerHtml += `<div><span class="text-sm font-bold text-amber-400">${totalL.toLocaleString('tr-TR')}</span> <span class="text-xs text-white/40">L</span></div>`;
+    if (hasMT) footerHtml += `<div><span class="text-base font-bold text-cyan-400">${totalMT.toFixed(1)}</span> <span class="text-sm text-white/40">MT</span></div>`;
+    if (hasL) footerHtml += `<div><span class="text-base font-bold text-amber-400">${totalL.toLocaleString('tr-TR')}</span> <span class="text-sm text-white/40">L</span></div>`;
 
     html += `</tbody><tfoot><tr class="border-t border-white/10">
-        <td colspan="6" class="py-3 pr-4 text-right text-xs font-semibold text-white/50">Toplam:</td>
+        <td colspan="7" class="py-3 pr-4 text-right text-sm font-semibold text-white/50">Toplam:</td>
         <td class="py-3 pr-4"><div class="flex flex-col gap-1">${footerHtml}</div></td>
     </tr></tfoot></table>`;
 

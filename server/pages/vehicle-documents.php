@@ -83,9 +83,9 @@ require_once __DIR__ . '/../includes/header.php';
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const [trucks, trailers, sets] = await Promise.all([
-            apiRequest('/api/trucks'),
-            apiRequest('/api/trailers'),
-            apiRequest('/api/vehicle-sets'),
+            loadTrucksWithStore(),
+            loadTrailersWithStore(),
+            loadVehicleSetsWithStore(),
         ]);
         document.getElementById('asmiraTruckCount').textContent = trucks.filter(t => t.category === 'asmira').length;
         document.getElementById('asmiraTrailerCount').textContent = trailers.filter(t => t.category === 'asmira').length;

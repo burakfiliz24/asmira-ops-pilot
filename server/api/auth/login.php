@@ -1,13 +1,21 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../middleware.php';
 setCorsHeaders();
+requireApiAuth(true); // Login auth gerektirmez
 
 if (getMethod() !== 'POST') {
     jsonResponse(['error' => 'Method not allowed'], 405);
 }
 
 try {
+    // Rate limiting kontrolü
+    if (!checkLoginRateLimit()) {
+        jsonResponse(['error' => 'Çok fazla giriş denemesi. 5 dakika sonra tekrar deneyin.'], 429);
+    }
+    recordLoginAttempt();
+
     $body = getJsonBody();
     validateRequired($body, ['username', 'password']);
 

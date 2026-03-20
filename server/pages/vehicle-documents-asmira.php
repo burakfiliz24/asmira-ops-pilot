@@ -45,7 +45,7 @@ require_once __DIR__ . '/../includes/header.php';
 <!-- Document Side Panel -->
 <div id="docPanel" class="hidden fixed inset-0 z-50 flex justify-end">
     <button type="button" class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePanel()"></button>
-    <div class="relative z-10 flex h-full w-full max-w-md flex-col overflow-hidden bg-[#0B1220] text-white shadow-xl">
+    <div class="doc-side-panel relative z-10 flex h-full w-full max-w-md flex-col overflow-hidden bg-[#0B1220] text-white shadow-xl">
         <div class="relative flex items-center justify-between px-5 py-4">
             <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-blue-500/60 via-blue-400/30 to-transparent"></div>
             <div>
@@ -70,6 +70,59 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
+<!-- Edit Vehicle Modal -->
+<div id="editVehicleModal" class="hidden modal-overlay">
+    <div class="modal-backdrop" onclick="closeModal('editVehicleModal')"></div>
+    <div class="relative z-10 mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#0B1220] text-white shadow-xl">
+        <div class="relative flex items-center justify-between px-5 py-4">
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-blue-500/60 via-blue-400/30 to-transparent"></div>
+            <div>
+                <div class="text-sm font-light tracking-[0.2em] text-slate-400">DÜZENLE</div>
+                <div class="text-lg font-bold">Plaka Bilgilerini Güncelle</div>
+            </div>
+            <button type="button" onclick="closeModal('editVehicleModal')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10"><i data-lucide="x" class="h-4 w-4"></i></button>
+        </div>
+        <input type="hidden" id="editSetId" value="">
+        <div class="space-y-4 px-5 py-5">
+            <div>
+                <label class="mb-2 block text-xs font-semibold text-white/70">Araç Tipi</label>
+                <div class="flex gap-2">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="editVehicleType" value="tir" class="hidden peer" onchange="toggleEditDorse()">
+                        <div class="peer-checked:border-blue-500/60 peer-checked:bg-blue-500/10 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition peer-checked:text-blue-400">
+                            <i data-lucide="truck" class="h-5 w-5"></i> TIR
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="editVehicleType" value="kirkayak" class="hidden peer" onchange="toggleEditDorse()">
+                        <div class="peer-checked:border-purple-500/60 peer-checked:bg-purple-500/10 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition peer-checked:text-purple-400">
+                            <i data-lucide="container" class="h-5 w-5"></i> KIRKAYAK
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="editVehicleType" value="kucuk" class="hidden peer" onchange="toggleEditDorse()">
+                        <div class="peer-checked:border-cyan-500/60 peer-checked:bg-cyan-500/10 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition peer-checked:text-cyan-400">
+                            <i data-lucide="car" class="h-5 w-5"></i> KÜÇÜK
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label class="mb-2 block text-xs font-semibold text-white/70">Araç Plaka</label>
+                <input type="text" id="editVehiclePlate" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-blue-500/50">
+            </div>
+            <div id="editDorseRow">
+                <label class="mb-2 block text-xs font-semibold text-white/70">Dorse Plaka</label>
+                <input type="text" id="editTrailerPlate" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-blue-500/50">
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t border-white/10 px-5 py-4">
+            <button type="button" onclick="closeModal('editVehicleModal')" class="rounded-lg px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10">Vazgeç</button>
+            <button type="button" onclick="saveEditVehicle()" class="rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(59,130,246,0.25)] transition-all hover:from-blue-500 hover:to-blue-600">Güncelle</button>
+        </div>
+    </div>
+</div>
+
 <!-- New Vehicle Modal -->
 <div id="newVehicleModal" class="hidden modal-overlay">
     <div class="modal-backdrop" onclick="closeModal('newVehicleModal')"></div>
@@ -86,11 +139,34 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
         <div class="space-y-4 px-5 py-5">
             <div>
-                <label class="mb-2 block text-xs font-semibold text-white/70">Araç Plaka</label>
-                <input type="text" id="newVehiclePlate" placeholder="Örn: 34 ASM 014" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-blue-500/50">
+                <label class="mb-2 block text-xs font-semibold text-white/70">Araç Tipi *</label>
+                <div class="flex gap-2">
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="newVehicleType" value="tir" checked class="hidden peer" onchange="toggleNewDorse()">
+                        <div class="peer-checked:border-blue-500/60 peer-checked:bg-blue-500/10 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition peer-checked:text-blue-400">
+                            <i data-lucide="truck" class="h-5 w-5"></i> TIR
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="newVehicleType" value="kirkayak" class="hidden peer" onchange="toggleNewDorse()">
+                        <div class="peer-checked:border-purple-500/60 peer-checked:bg-purple-500/10 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition peer-checked:text-purple-400">
+                            <i data-lucide="container" class="h-5 w-5"></i> KIRKAYAK
+                        </div>
+                    </label>
+                    <label class="flex-1 cursor-pointer">
+                        <input type="radio" name="newVehicleType" value="kucuk" class="hidden peer" onchange="toggleNewDorse()">
+                        <div class="peer-checked:border-cyan-500/60 peer-checked:bg-cyan-500/10 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-medium text-white/70 transition peer-checked:text-cyan-400">
+                            <i data-lucide="car" class="h-5 w-5"></i> KÜÇÜK
+                        </div>
+                    </label>
+                </div>
             </div>
             <div>
-                <label class="mb-2 block text-xs font-semibold text-white/70">Dorse Plaka</label>
+                <label class="mb-2 block text-xs font-semibold text-white/70">Araç Plaka *</label>
+                <input type="text" id="newVehiclePlate" placeholder="Örn: 34 ASM 014" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-blue-500/50">
+            </div>
+            <div id="newDorseRow">
+                <label class="mb-2 block text-xs font-semibold text-white/70">Dorse Plaka *</label>
                 <input type="text" id="newTrailerPlate" placeholder="Örn: 34 DOR 123" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-blue-500/50">
             </div>
         </div>
@@ -120,9 +196,26 @@ const DEFAULT_VEHICLE_DOCS = [
     { type: 'tankMuayeneSertifikasi', label: 'Tank Muayene Sertifikası' },
     { type: 'vergiLevhasi', label: 'Vergi Levhası' },
 ];
+// TIR: çekicide tank/sayaç/hortum yok, dorsede egzoz/trafik sigortası/takograf yok
+const TIR_TRUCK_EXCLUDE = ['tankMuayeneSertifikasi', 'sayacKalibrasyon', 'hortumBasin'];
+const TIR_TRAILER_EXCLUDE = ['egzozEmisyon', 'trafikSigortasi', 'takografKalibrasyon'];
+const TRAILER_GENERAL_EXCLUDE = ['yetkiBelgesi', 'vergiLevhasi', 'faaliyetBelgesi'];
+
 function ensureVehicleDocs(docs) {
-    if (!docs || docs.length === 0) return DEFAULT_VEHICLE_DOCS.map(d => ({ ...d, fileName: null, filePath: null, expiryDate: null }));
-    return docs;
+    const existing = docs || [];
+    return DEFAULT_VEHICLE_DOCS.map(def => {
+        const found = existing.find(d => d.type === def.type);
+        return found ? { ...def, ...found } : { ...def, fileName: null, filePath: null, expiryDate: null };
+    });
+}
+function filterDocsForType(docs, vehicleType, ownerType) {
+    let filtered = docs;
+    if (ownerType === 'trailer') filtered = filtered.filter(d => !TRAILER_GENERAL_EXCLUDE.includes(d.type));
+    if (vehicleType === 'tir') {
+        const exclude = ownerType === 'truck' ? TIR_TRUCK_EXCLUDE : TIR_TRAILER_EXCLUDE;
+        filtered = filtered.filter(d => !exclude.includes(d.type));
+    }
+    return filtered;
 }
 
 let trucks = [], trailers = [], vehicleSets = [], vehicles = [];
@@ -134,7 +227,7 @@ document.addEventListener('DOMContentLoaded', loadData);
 async function loadData() {
     try {
         [trucks, trailers, vehicleSets] = await Promise.all([
-            loadTrucksWithStore(), loadTrailersWithStore(), apiRequest('/api/vehicle-sets').catch(() => []),
+            loadTrucksWithStore(), loadTrailersWithStore(), loadVehicleSetsWithStore(),
         ]);
         trucks.forEach(t => t.documents = ensureVehicleDocs(t.documents));
         trailers.forEach(t => t.documents = ensureVehicleDocs(t.documents));
@@ -146,11 +239,14 @@ async function loadData() {
 function buildVehicles() {
     vehicles = vehicleSets.filter(s => s.category === CATEGORY).map(set => {
         const truck = trucks.find(t => t.id === set.truckId);
-        const trailer = trailers.find(t => t.id === set.trailerId);
+        const trailer = set.trailerId ? trailers.find(t => t.id === set.trailerId) : null;
+        const vType = set.vehicleType || 'tir';
         return {
-            id: set.id, truckId: set.truckId, trailerId: set.trailerId,
+            id: set.id, truckId: set.truckId, trailerId: set.trailerId || null,
+            vehicleType: vType,
             vehiclePlate: truck?.plate || '', trailerPlate: trailer?.plate || '',
-            vehicleDocuments: ensureVehicleDocs(truck?.documents), trailerDocuments: ensureVehicleDocs(trailer?.documents),
+            vehicleDocuments: filterDocsForType(ensureVehicleDocs(truck?.documents), vType, 'truck'),
+            trailerDocuments: (vType === 'kirkayak' || vType === 'kucuk') ? [] : filterDocsForType(ensureVehicleDocs(trailer?.documents), vType, 'trailer'),
         };
     });
     document.getElementById('totalCount').textContent = vehicles.length;
@@ -166,6 +262,11 @@ function renderGrid() {
         lucide.createIcons({nodes:[grid]}); return;
     }
     grid.innerHTML = vehicles.map(v => {
+        const noDorse = !hasDorse(v.vehicleType);
+        const typeColors = { tir: 'blue', kirkayak: 'purple', kucuk: 'cyan' };
+        const typeIcons = { tir: 'truck', kirkayak: 'container', kucuk: 'car' };
+        const typeLabels = { tir: 'TIR', kirkayak: 'KIRKAYAK', kucuk: 'KÜÇÜK' };
+        const tc = typeColors[v.vehicleType] || 'blue';
         const vUp = countUploaded(v.vehicleDocuments);
         const tUp = countUploaded(v.trailerDocuments);
         const uploaded = vUp + tUp;
@@ -178,12 +279,12 @@ function renderGrid() {
             ? 'border-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.15)]'
             : isComplete
             ? 'border-emerald-500/40 shadow-[0_0_25px_rgba(52,211,153,0.15)]'
-            : 'border-blue-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.2)]';
+            : `border-${tc}-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.2)]`;
         const iconCls = hasExpired
             ? 'from-red-500/25 to-red-600/10 text-red-400'
             : isComplete
             ? 'from-emerald-500/25 to-emerald-600/10 text-emerald-400'
-            : 'from-blue-500/25 to-blue-600/10 text-blue-400';
+            : `from-${tc}-500/25 to-${tc}-600/10 text-${tc}-400`;
         const progCls = isComplete
             ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]'
             : 'bg-gradient-to-r from-amber-500 to-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.4)]';
@@ -195,15 +296,17 @@ function renderGrid() {
         } else {
             statusBadge = `<div class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-400"><i data-lucide="alert-triangle" class="h-3 w-3"></i>${total - uploaded} Evrak Eksik</div>`;
         }
+        const typeBadge = `<span class="rounded-full bg-${tc}-500/20 px-2 py-0.5 text-[10px] font-bold text-${tc}-400">${typeLabels[v.vehicleType] || 'TIR'}</span>`;
+        const vehicleIcon = typeIcons[v.vehicleType] || 'truck';
 
         return `<div class="group relative flex flex-col rounded-xl border bg-gradient-to-br from-white/[0.04] to-transparent p-4 backdrop-blur-sm transition-all hover:bg-white/[0.06] ${borderCls}">
-            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-blue-500/10 blur-2xl transition-opacity group-hover:opacity-100 opacity-0"></div>
+            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-${tc}-500/10 blur-2xl transition-opacity group-hover:opacity-100 opacity-0"></div>
             <button type="button" onclick="deleteVehicle('${v.id}')" class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md border border-red-500/30 bg-red-500/10 text-red-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-500/20" title="Kaydı Sil"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i></button>
             <div class="mb-4 flex items-start gap-3">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ${iconCls}"><i data-lucide="truck" class="h-5 w-5"></i></div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ${iconCls}"><i data-lucide="${vehicleIcon}" class="h-5 w-5"></i></div>
                 <div class="min-w-0 flex-1">
-                    <div class="truncate text-[15px] font-bold tracking-tight">${escapeHtml(v.vehiclePlate)}</div>
-                    <div class="truncate text-xs text-white/50">${escapeHtml(v.trailerPlate)}</div>
+                    <div class="flex items-center gap-2"><span class="truncate text-[15px] font-bold tracking-tight">${escapeHtml(v.vehiclePlate)}</span>${typeBadge}</div>
+                    ${noDorse ? '' : `<div class="truncate text-xs text-white/50">${escapeHtml(v.trailerPlate)}</div>`}
                 </div>
             </div>
             <div class="mb-3">
@@ -246,13 +349,23 @@ function hasPendingChanges() {
 function renderPanel() {
     const v = vehicles.find(x => x.id === panelVehicleId);
     if (!v) return;
+    const noDorse = !hasDorse(v.vehicleType);
+    if (noDorse) panelTab = 'truck';
     document.getElementById('panelTitle').textContent = panelTab === 'truck' ? v.vehiclePlate : v.trailerPlate;
+    const typeColors = { tir: 'blue', kirkayak: 'purple', kucuk: 'cyan' };
+    const typeIcons = { tir: 'truck', kirkayak: 'container', kucuk: 'car' };
+    const tc = typeColors[v.vehicleType] || 'blue';
 
     // Tabs
     const tabsEl = document.getElementById('panelTabs');
-    tabsEl.innerHTML = `
-        <button type="button" onclick="panelTab='truck';renderPanel();lucide.createIcons()" class="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${panelTab==='truck' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-white/50 hover:text-white/70'}"><i data-lucide="truck" class="h-4 w-4"></i>Araç (${v.vehiclePlate})</button>
-        <button type="button" onclick="panelTab='trailer';renderPanel();lucide.createIcons()" class="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${panelTab==='trailer' ? 'border-b-2 border-cyan-500 text-cyan-400' : 'text-white/50 hover:text-white/70'}"><i data-lucide="container" class="h-4 w-4"></i>Dorse (${v.trailerPlate})</button>`;
+    if (noDorse) {
+        tabsEl.innerHTML = `
+            <button type="button" class="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium border-b-2 border-${tc}-500 text-${tc}-400"><i data-lucide="${typeIcons[v.vehicleType] || 'truck'}" class="h-4 w-4"></i>Araç (${v.vehiclePlate})</button>`;
+    } else {
+        tabsEl.innerHTML = `
+            <button type="button" onclick="panelTab='truck';renderPanel();lucide.createIcons()" class="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${panelTab==='truck' ? 'border-b-2 border-blue-500 text-blue-400' : 'text-white/50 hover:text-white/70'}"><i data-lucide="truck" class="h-4 w-4"></i>Araç (${v.vehiclePlate})</button>
+            <button type="button" onclick="panelTab='trailer';renderPanel();lucide.createIcons()" class="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${panelTab==='trailer' ? 'border-b-2 border-cyan-500 text-cyan-400' : 'text-white/50 hover:text-white/70'}"><i data-lucide="container" class="h-4 w-4"></i>Dorse (${v.trailerPlate})</button>`;
+    }
 
     const docs = panelTab === 'truck' ? v.vehicleDocuments : v.trailerDocuments;
     const docsEl = document.getElementById('panelDocs');
@@ -277,10 +390,10 @@ function renderPanel() {
                 </div>
             </div>`;
         } else {
-            fileSection = `<div class="mt-3"><label class="inline-flex items-center gap-2 rounded-md border border-dashed border-white/20 bg-white/5 px-4 py-2 text-sm hover:bg-white/10 cursor-pointer"><i data-lucide="upload" class="h-4 w-4"></i>PDF veya Görsel Yükle<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="panelUpload(this,'${doc.type}')"></label></div>`;
+            fileSection = `<div class="mt-3"><label class="flex items-center justify-center gap-2 rounded-md border border-dashed border-white/20 bg-white/5 px-4 py-3 text-sm hover:bg-white/10 cursor-pointer text-white/50 hover:text-white/70 transition"><i data-lucide="upload" class="h-4 w-4"></i>Dosya sürükleyin veya tıklayın<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.tiff,.doc,.docx" onchange="panelUpload(this,'${doc.type}')"></label></div>`;
         }
 
-        return `<div class="rounded-lg border p-4 ${borderCls}">
+        return `<div class="rounded-lg border p-4 ${borderCls} transition-all" ondragover="event.preventDefault();this.classList.add('ring-2','ring-blue-400','bg-blue-500/10')" ondragenter="event.preventDefault()" ondragleave="this.classList.remove('ring-2','ring-blue-400','bg-blue-500/10')" ondrop="handleDocDrop(event,'${doc.type}')">
             <div class="flex items-center gap-2">
                 ${fileName ? '<i data-lucide="check-circle" class="h-4 w-4 text-emerald-400"></i>' : '<div class="h-4 w-4 rounded-full border-2 border-white/30"></div>'}
                 <span class="font-medium">${escapeHtml(doc.label || doc.type)}</span>
@@ -290,7 +403,7 @@ function renderPanel() {
             ${fileSection}
             <div class="mt-3 flex items-center gap-2">
                 <label class="text-xs text-white/50">Son Geçerlilik:</label>
-                <input type="date" value="${expiryDate || ''}" onchange="panelExpiryChange('${doc.type}',this.value)" class="h-8 rounded-md border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus:border-blue-500/50">
+                <input type="date" value="${expiryDate || ''}" onchange="panelExpiryChange('${doc.type}',this.value)" style="color-scheme:dark" class="h-8 rounded-md border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus:border-blue-500/50">
                 ${expiryDate ? `<button type="button" onclick="panelExpiryChange('${doc.type}',null)" class="text-xs text-white/40 hover:text-white/60" title="Tarihi Kaldır">✕</button>` : ''}
             </div>
         </div>`;
@@ -312,6 +425,15 @@ function renderPanel() {
 
 function panelUpload(input, docType) {
     const file = input.files[0]; if (!file) return;
+    _addUploadFile(file, docType);
+}
+function handleDocDrop(e, docType) {
+    e.preventDefault(); e.stopPropagation();
+    e.currentTarget.classList.remove('ring-2','ring-blue-400','bg-blue-500/10');
+    const file = e.dataTransfer.files[0]; if (!file) return;
+    _addUploadFile(file, docType);
+}
+function _addUploadFile(file, docType) {
     const fileUrl = URL.createObjectURL(file);
     pendingChanges.uploads = pendingChanges.uploads.filter(u => !(u.target === panelTab && u.docType === docType));
     pendingChanges.uploads.push({ target: panelTab, docType, file, fileName: file.name, fileUrl });
@@ -334,95 +456,207 @@ async function savePanelChanges() {
     if (!hasPendingChanges() || !panelVehicleId) return;
     const v = vehicles.find(x => x.id === panelVehicleId);
     if (!v) return;
+
+    let successCount = 0, failCount = 0, failMessages = [];
+    const doneDeletions = [], doneUploads = [], doneExpiries = [];
+
+    // 1) Silme işlemleri
+    for (const del of pendingChanges.deletions) {
+        const ownerId = del.target === 'truck' ? v.truckId : v.trailerId;
+        try {
+            await apiRequest('/api/documents/update', { method: 'DELETE', body: JSON.stringify({ ownerId, ownerType: del.target, docType: del.docType }) });
+            doneDeletions.push(del); successCount++;
+        } catch(e) { failCount++; failMessages.push('Silme: ' + (e.message || del.docType)); }
+    }
+
+    // 2) Dosya yükleme
+    for (const up of pendingChanges.uploads) {
+        const ownerId = up.target === 'truck' ? v.truckId : v.trailerId;
+        try {
+            const res = await uploadFile(up.file, ownerId, up.target, up.docType);
+            up.serverFilePath = res?.filePath || null;
+            doneUploads.push(up); successCount++;
+        } catch(e) { failCount++; failMessages.push('Yükleme (' + up.docType + '): ' + (e.message || 'Bilinmeyen hata')); }
+    }
+
+    // 3) Tarih güncelleme
+    for (const exp of pendingChanges.expiryDates) {
+        const ownerId = exp.target === 'truck' ? v.truckId : v.trailerId;
+        try {
+            await apiRequest('/api/documents/update', { method: 'PUT', body: JSON.stringify({ ownerId, ownerType: exp.target, docType: exp.docType, expiryDate: exp.date }) });
+            doneExpiries.push(exp); successCount++;
+        } catch(e) { failCount++; failMessages.push('Tarih: ' + (e.message || exp.docType)); }
+    }
+
+    // Sadece BAŞARILI işlemleri lokal veriye uygula
+    const applyToLocal = (docs, target) => {
+        for (const del of doneDeletions.filter(d => d.target === target)) {
+            const doc = docs.find(d => d.type === del.docType);
+            if (doc) { doc.fileName = null; doc.filePath = null; doc.fileUrl = null; }
+        }
+        for (const up of doneUploads.filter(u => u.target === target)) {
+            const doc = docs.find(d => d.type === up.docType);
+            if (doc) { doc.fileName = up.fileName; doc.filePath = up.serverFilePath; doc.fileUrl = up.fileUrl; }
+        }
+        for (const exp of doneExpiries.filter(e => e.target === target)) {
+            const doc = docs.find(d => d.type === exp.docType);
+            if (doc) { doc.expiryDate = exp.date; }
+        }
+    };
+    applyToLocal(v.vehicleDocuments, 'truck');
+    applyToLocal(v.trailerDocuments, 'trailer');
+
+    const truck = trucks.find(t => t.id === v.truckId);
+    if (truck) truck.documents = v.vehicleDocuments;
+    const trailer = trailers.find(t => t.id === v.trailerId);
+    if (trailer) trailer.documents = v.trailerDocuments;
+
+    // Başarılı olanları pendingChanges'dan kaldır, başarısızlar kalsın
+    pendingChanges.deletions = pendingChanges.deletions.filter(d => !doneDeletions.includes(d));
+    pendingChanges.uploads = pendingChanges.uploads.filter(u => !doneUploads.includes(u));
+    pendingChanges.expiryDates = pendingChanges.expiryDates.filter(e => !doneExpiries.includes(e));
+
+    // Kayıt sonrası DB'den güncel veriyi çek (lokal cache ile DB senkronizasyonu)
     try {
-        for (const del of pendingChanges.deletions) {
-            const ownerId = del.target === 'truck' ? v.truckId : v.trailerId;
-            try { await apiRequest('/api/documents/update', { method: 'DELETE', body: JSON.stringify({ ownerId, ownerType: del.target, docType: del.docType }) }); } catch(e) {}
-        }
-        for (const up of pendingChanges.uploads) {
-            const ownerId = up.target === 'truck' ? v.truckId : v.trailerId;
-            try { await uploadFile(up.file, ownerId, up.target, up.docType); } catch(e) {}
-        }
-        for (const exp of pendingChanges.expiryDates) {
-            const ownerId = exp.target === 'truck' ? v.truckId : v.trailerId;
-            try { await apiRequest('/api/documents/update', { method: 'PUT', body: JSON.stringify({ ownerId, ownerType: exp.target, docType: exp.docType, expiryDate: exp.date }) }); } catch(e) {}
-        }
-        // Lokal verilere uygula
-        const applyToLocal = (docs, target) => {
-            for (const del of pendingChanges.deletions.filter(d => d.target === target)) {
-                const doc = docs.find(d => d.type === del.docType);
-                if (doc) { doc.fileName = null; doc.filePath = null; doc.fileUrl = null; }
-            }
-            for (const up of pendingChanges.uploads.filter(u => u.target === target)) {
-                const doc = docs.find(d => d.type === up.docType);
-                if (doc) { doc.fileName = up.fileName; doc.fileUrl = up.fileUrl; }
-            }
-            for (const exp of pendingChanges.expiryDates.filter(e => e.target === target)) {
-                const doc = docs.find(d => d.type === exp.docType);
-                if (doc) { doc.expiryDate = exp.date; }
-            }
-        };
-        applyToLocal(v.vehicleDocuments, 'truck');
-        applyToLocal(v.trailerDocuments, 'trailer');
-        // Truck/Trailer dizilerine de uygula
-        const truck = trucks.find(t => t.id === v.truckId);
-        if (truck) truck.documents = v.vehicleDocuments;
-        const trailer = trailers.find(t => t.id === v.trailerId);
-        if (trailer) trailer.documents = v.trailerDocuments;
-        pendingChanges = { uploads: [], expiryDates: [], deletions: [] };
-        // localStorage'a kaydet - diğer sayfalar (Dashboard, Evrak Takibi) buradan okuyacak
+        const [freshTrucks, freshTrailers] = await Promise.all([
+            loadTrucksWithStore(), loadTrailersWithStore()
+        ]);
+        trucks = freshTrucks;
+        trailers = freshTrailers;
+        trucks.forEach(t => t.documents = ensureVehicleDocs(t.documents));
+        trailers.forEach(t => t.documents = ensureVehicleDocs(t.documents));
+        buildVehicles();
+    } catch(e) {
+        // Yeniden yükleme başarısız — lokal veriyle devam et
         saveDocStore('trucks', trucks);
         saveDocStore('trailers', trailers);
-        showToast('Değişiklikler kaydedildi');
-        renderGrid();
-        renderPanel();
-    } catch (e) { showToast('Kayıt hatası: ' + e.message, 'error'); }
+    }
+    renderGrid();
+    renderPanel();
+
+    if (failCount === 0) {
+        showToast(`${successCount} değişiklik kaydedildi`);
+    } else if (successCount === 0) {
+        showToast(`Kayıt başarısız: ${failMessages.join(' | ')}`, 'error');
+    } else {
+        showToast(`${successCount} kaydedildi, ${failCount} başarısız: ${failMessages.join(' | ')}`, 'error');
+    }
 }
 
 // ======= CRUD =======
+function hasDorse(vType) { return vType === 'tir'; }
+
+function toggleNewDorse() {
+    const vType = document.querySelector('input[name="newVehicleType"]:checked').value;
+    document.getElementById('newDorseRow').style.display = hasDorse(vType) ? '' : 'none';
+}
+
 function openNewModal() { 
     document.getElementById('newVehiclePlate').value = '';
     document.getElementById('newTrailerPlate').value = '';
+    document.querySelector('input[name="newVehicleType"][value="tir"]').checked = true;
+    toggleNewDorse();
     openModal('newVehicleModal'); lucide.createIcons(); 
 }
 
 async function saveNewVehicle() {
+    const vType = document.querySelector('input[name="newVehicleType"]:checked').value;
     const vPlate = document.getElementById('newVehiclePlate').value.trim();
     const tPlate = document.getElementById('newTrailerPlate').value.trim();
-    if (!vPlate || !tPlate) { showToast('Lütfen her iki plakayı da girin', 'error'); return; }
+    if (!vPlate) { showToast('Araç plakası gerekli', 'error'); return; }
+    if (hasDorse(vType) && !tPlate) { showToast('TIR için dorse plakası gerekli', 'error'); return; }
     try {
         const truckRes = await apiRequest('/api/trucks', { method: 'POST', body: JSON.stringify({ plate: vPlate, category: CATEGORY }) });
-        const trailerRes = await apiRequest('/api/trailers', { method: 'POST', body: JSON.stringify({ plate: tPlate, category: CATEGORY }) });
-        const setRes = await apiRequest('/api/vehicle-sets', { method: 'POST', body: JSON.stringify({ truckId: truckRes.id, trailerId: trailerRes.id, category: CATEGORY }) });
+        let trailerId = null;
+        if (vType === 'tir') {
+            const trailerRes = await apiRequest('/api/trailers', { method: 'POST', body: JSON.stringify({ plate: tPlate, category: CATEGORY }) });
+            trailerId = trailerRes.id;
+            trailers.push({ id: trailerRes.id, plate: tPlate, category: CATEGORY, documents: ensureVehicleDocs(trailerRes.documents) });
+        }
+        const setRes = await apiRequest('/api/vehicle-sets', { method: 'POST', body: JSON.stringify({ truckId: truckRes.id, trailerId, category: CATEGORY, vehicleType: vType }) });
 
-        // Lokal dizilere de ekle (DB offline ise GET boş dönecek)
         trucks.push({ id: truckRes.id, plate: vPlate, category: CATEGORY, documents: ensureVehicleDocs(truckRes.documents) });
-        trailers.push({ id: trailerRes.id, plate: tPlate, category: CATEGORY, documents: ensureVehicleDocs(trailerRes.documents) });
-        vehicleSets.push({ id: setRes.id, truckId: truckRes.id, trailerId: trailerRes.id, category: CATEGORY });
+        vehicleSets.push({ id: setRes.id, truckId: truckRes.id, trailerId, category: CATEGORY, vehicleType: vType });
         buildVehicles();
         saveDocStore('trucks', trucks);
         saveDocStore('trailers', trailers);
+        saveDocStore('vehicleSets', vehicleSets);
         renderGrid();
 
         closeModal('newVehicleModal');
-        showToast('Araç/Dorse eklendi');
+        showToast(vType === 'kirkayak' ? 'Kırkayak araç eklendi' : 'Araç/Dorse eklendi');
     } catch (e) { showToast('Kayıt hatası: ' + e.message, 'error'); }
 }
 
 async function deleteVehicle(setId) {
     if (!confirmAction('Bu kaydı silmek istediğinize emin misiniz?')) return;
+    const set = vehicleSets.find(s => s.id === setId);
     try {
         await apiRequest('/api/vehicle-sets', { method: 'DELETE', body: JSON.stringify({ id: setId }) });
-        showToast('Kayıt silindi');
-        await loadData();
-        saveDocStore('trucks', trucks);
-        saveDocStore('trailers', trailers);
-    } catch (e) { showToast('Silme hatası: ' + e.message, 'error'); }
+        // İlgili truck/trailer'ı da sil
+        if (set) {
+            try { await apiRequest('/api/trucks', { method: 'DELETE', body: JSON.stringify({ id: set.truckId }) }); } catch(e) {}
+            if (set.trailerId) { try { await apiRequest('/api/trailers', { method: 'DELETE', body: JSON.stringify({ id: set.trailerId }) }); } catch(e) {} }
+        }
+    } catch (e) { console.warn('API delete hatası (devam ediliyor):', e); }
+    // Lokal arraylerden hemen kaldır
+    if (set) {
+        trucks = trucks.filter(t => t.id !== set.truckId);
+        trailers = trailers.filter(t => t.id !== set.trailerId);
+    }
+    vehicleSets = vehicleSets.filter(s => s.id !== setId);
+    saveDocStore('trucks', trucks);
+    saveDocStore('trailers', trailers);
+    saveDocStore('vehicleSets', vehicleSets);
+    buildVehicles();
+    if (panelVehicleId === setId) { panelVehicleId = null; document.getElementById('detailPanel')?.classList.add('hidden'); }
+    renderGrid();
+    showToast('Kayıt silindi');
+}
+
+function toggleEditDorse() {
+    const vType = document.querySelector('input[name="editVehicleType"]:checked').value;
+    document.getElementById('editDorseRow').style.display = hasDorse(vType) ? '' : 'none';
 }
 
 function editVehicle(setId) {
-    // Placeholder: open panel to edit
-    openPanel(setId);
+    const v = vehicles.find(x => x.id === setId); if (!v) return;
+    document.getElementById('editSetId').value = setId;
+    document.getElementById('editVehiclePlate').value = v.vehiclePlate;
+    document.getElementById('editTrailerPlate').value = v.trailerPlate || '';
+    // Mevcut tipi seç
+    const typeRadio = document.querySelector(`input[name="editVehicleType"][value="${v.vehicleType || 'tir'}"]`);
+    if (typeRadio) typeRadio.checked = true;
+    toggleEditDorse();
+    openModal('editVehicleModal'); lucide.createIcons();
+}
+async function saveEditVehicle() {
+    const setId = document.getElementById('editSetId').value;
+    const newType = document.querySelector('input[name="editVehicleType"]:checked').value;
+    const vPlate = document.getElementById('editVehiclePlate').value.trim();
+    const v = vehicles.find(x => x.id === setId); if (!v) return;
+    const noDorse = !hasDorse(newType);
+    const tPlate = document.getElementById('editTrailerPlate').value.trim();
+    if (!vPlate) { showToast('Araç plakası gerekli', 'error'); return; }
+    if (!noDorse && !tPlate) { showToast('Dorse plakası gerekli', 'error'); return; }
+    try {
+        await apiRequest('/api/trucks', { method: 'PUT', body: JSON.stringify({ id: v.truckId, plate: vPlate }) });
+        // Tip değiştiyse vehicle-sets güncelle
+        if (newType !== v.vehicleType) {
+            await apiRequest('/api/vehicle-sets', { method: 'PUT', body: JSON.stringify({ id: setId, vehicleType: newType, trailerId: noDorse ? '' : v.trailerId }) });
+            const set = vehicleSets.find(s => s.id === setId);
+            if (set) { set.vehicleType = newType; if (noDorse) set.trailerId = ''; }
+            saveDocStore('vehicleSets', vehicleSets);
+        }
+        if (!noDorse && v.trailerId) {
+            await apiRequest('/api/trailers', { method: 'PUT', body: JSON.stringify({ id: v.trailerId, plate: tPlate }) });
+            const trailer = trailers.find(t => t.id === v.trailerId); if (trailer) trailer.plate = tPlate;
+        }
+        const truck = trucks.find(t => t.id === v.truckId); if (truck) truck.plate = vPlate;
+        saveDocStore('trucks', trucks); saveDocStore('trailers', trailers);
+        buildVehicles(); renderGrid();
+        closeModal('editVehicleModal'); showToast('Araç bilgileri güncellendi');
+    } catch (e) { showToast('Güncelleme hatası: ' + e.message, 'error'); }
 }
 </script>
 

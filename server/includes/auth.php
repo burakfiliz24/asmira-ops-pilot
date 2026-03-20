@@ -29,6 +29,23 @@ function isAdmin(): bool
 }
 
 /**
+ * Kullanıcının yönetici olup olmadığını kontrol eder.
+ */
+function isManager(): bool
+{
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'manager';
+}
+
+/**
+ * Kullanıcının yönetici veya admin olup olmadığını kontrol eder.
+ * Ayarlar sayfasına erişim için kullanılır.
+ */
+function isManagerOrAdmin(): bool
+{
+    return isAdmin() || isManager();
+}
+
+/**
  * Oturum açmış kullanıcı bilgisini döndürür.
  */
 function getCurrentUser(): ?array

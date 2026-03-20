@@ -4,17 +4,6 @@
  */
 require_once __DIR__ . '/../includes/auth.php';
 
-$dbAvailable = false;
-try {
-    require_once __DIR__ . '/../api/db.php';
-    if (function_exists('getDbSafe')) {
-        $testDb = getDbSafe();
-        $dbAvailable = ($testDb !== null);
-    }
-} catch (\Throwable $e) {
-    // DB bağlantısı yoksa login hala çalışır
-}
-
 // Zaten giriş yapmışsa dashboard'a yönlendir
 if (isset($_SESSION['user_id'])) {
     header('Location: /dashboard');
@@ -23,6 +12,11 @@ if (isset($_SESSION['user_id'])) {
 
 $error = '';
 
+// CSRF token oluştur
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 // Fallback kullanıcılar (DB yokken lokal test için)
 $fallbackUsers = [
     ['id' => 'u1', 'username' => 'admin', 'password' => 'admin', 'name' => 'Yönetici', 'role' => 'admin'],
@@ -30,17 +24,31 @@ $fallbackUsers = [
     ['id' => 'u3', 'username' => 'user', 'password' => 'user', 'name' => 'Kullanıcı', 'role' => 'user'],
 ];
 
-// POST - Login işlemi
+// POST - Login işlemi (DB bağlantısı sadece login denemesinde yapılır)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // CSRF token doğrulama
+    $token = $_POST['csrf_token'] ?? '';
+    if (!hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+        $error = 'Geçersiz istek. Lütfen sayfayı yenileyip tekrar deneyin.';
+    }
+    // Token'ı yenile (tek kullanımlık)
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if ($username && $password) {
+    if (!$error && $username && $password) {
         $authenticated = false;
+        $dbAvailable = false;
 
         // Önce DB'den dene
-        if ($dbAvailable) {
-            try {
+        try {
+            require_once __DIR__ . '/../api/db.php';
+            if (function_exists('getDbSafe')) {
+                $testDb = getDbSafe();
+                $dbAvailable = ($testDb !== null);
+            }
+            if ($dbAvailable) {
                 $db = getDb();
                 $stmt = $db->prepare("SELECT id, username, password, name, role FROM users WHERE LOWER(username) = LOWER(?)");
                 $stmt->execute([$username]);
@@ -54,14 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     loginUser($user);
                     $authenticated = true;
                 }
-            } catch (\Throwable $e) {
-                // DB hatası - fallback'e düş
-                $dbAvailable = false;
             }
+        } catch (\Throwable $e) {
+            // DB hatası - fallback'e düş
+            $dbAvailable = false;
         }
 
         // DB yoksa veya başarısızsa fallback kullanıcıları dene
-        if (!$authenticated && !$dbAvailable) {
+        if (!$authenticated) {
             foreach ($fallbackUsers as $fu) {
                 if (strtolower($fu['username']) === strtolower($username) && $fu['password'] === $password) {
                     loginUser($fu);
@@ -86,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Asmira Ops - Giriş</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
@@ -114,6 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .animate-float-slow { animation: float-slow 8s ease-in-out infinite; }
         .animate-float-medium { animation: float-medium 6s ease-in-out infinite; }
         .animate-float-fast { animation: float-fast 4s ease-in-out infinite; }
+        html { height: 100%; background: #0a0f1a; overflow: hidden; }
+        body { height: 100%; min-height: 100vh; min-height: -webkit-fill-available; background: #0a0f1a; margin: 0; overflow: hidden; }
+        @media (max-width: 639px) {
+            input, select, textarea { font-size: 16px !important; }
+        }
         @keyframes fadeInUp {
             from { transform: translateY(24px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
@@ -121,9 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .fade-in-up { animation: fadeInUp 0.7s ease-out forwards; }
     </style>
 </head>
-<body class="h-screen flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0f1a]">
+<body class="flex items-center justify-center p-4 relative overflow-hidden bg-[#0a0f1a]">
     <!-- Background -->
-    <div class="absolute inset-0">
+    <div class="fixed inset-0">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0a1525] via-[#0c1a2e] to-[#071018]"></div>
         <!-- Wave pattern -->
         <div class="absolute bottom-0 left-0 right-0 h-[40%] opacity-[0.06]">
@@ -158,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="p-6 sm:p-8 lg:p-10">
                 <!-- Logo -->
                 <div class="flex justify-center mb-6 lg:mb-8">
-                    <img src="/assets/img/asmira-energy-logo.png" alt="Asmira Energy" class="h-16 sm:h-20 lg:h-24 object-contain">
+                    <img src="/assets/img/asmira-energy-logo.png" alt="Asmira Energy" class="h-12 sm:h-14 lg:h-16 object-contain">
                 </div>
 
                 <!-- Title -->
@@ -172,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <!-- Form -->
                 <form method="POST" class="space-y-4" id="loginForm">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
                     <!-- Username -->
                     <div class="space-y-2">
                         <label class="block text-xs font-medium text-white/40 uppercase tracking-wider">Kullanıcı Adı</label>

@@ -63,9 +63,16 @@ require_once __DIR__ . '/../includes/header.php';
                             <p class="text-xs text-white/50">Evrak paketine eklenecek çekiciyi seçin</p>
                         </div>
                     </div>
-                    <select id="truckSelect" onchange="onTruckChange()" class="mb-4 h-11 w-full rounded-lg border border-white/10 bg-[#0B1220] px-3 text-sm outline-none focus:border-blue-500/50">
-                        <option value="">Çekici seçin...</option>
-                    </select>
+                    <div class="relative mb-4" id="truckDropdownWrap">
+                        <button type="button" onclick="toggleDD('truck')" id="truckDDBtn" class="flex h-11 w-full items-center justify-between rounded-lg border border-white/10 bg-[#0B1220] px-3 text-sm outline-none transition-all hover:border-blue-500/40">
+                            <span class="truncate text-white/40" id="truckDDLabel">Çekici seçin...</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-white/40"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div id="truckDDPanel" class="absolute left-0 right-0 top-[calc(100%+4px)] z-50 hidden overflow-hidden rounded-lg border border-white/15 bg-[#0f1a2e] shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+                            <div class="border-b border-white/10 p-2"><div class="relative"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30"></i><input type="text" id="truckDDSearch" oninput="filterDD('truck')" placeholder="Plaka ara..." class="h-9 w-full rounded-md border border-white/10 bg-white/5 pl-8 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-500/40"></div></div>
+                            <div id="truckDDOptions" class="max-h-52 overflow-y-auto p-1"></div>
+                        </div>
+                    </div>
                     <div id="truckDocsList"></div>
                 </div>
 
@@ -80,9 +87,16 @@ require_once __DIR__ . '/../includes/header.php';
                             <p class="text-xs text-white/50">Evrak paketine eklenecek dorseyi seçin</p>
                         </div>
                     </div>
-                    <select id="trailerSelect" onchange="onTrailerChange()" class="mb-4 h-11 w-full rounded-lg border border-white/10 bg-[#0B1220] px-3 text-sm outline-none focus:border-cyan-500/50">
-                        <option value="">Dorse seçin...</option>
-                    </select>
+                    <div class="relative mb-4" id="trailerDropdownWrap">
+                        <button type="button" onclick="toggleDD('trailer')" id="trailerDDBtn" class="flex h-11 w-full items-center justify-between rounded-lg border border-white/10 bg-[#0B1220] px-3 text-sm outline-none transition-all hover:border-cyan-500/40">
+                            <span class="truncate text-white/40" id="trailerDDLabel">Dorse seçin...</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-white/40"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div id="trailerDDPanel" class="absolute left-0 right-0 top-[calc(100%+4px)] z-50 hidden overflow-hidden rounded-lg border border-white/15 bg-[#0f1a2e] shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+                            <div class="border-b border-white/10 p-2"><div class="relative"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30"></i><input type="text" id="trailerDDSearch" oninput="filterDD('trailer')" placeholder="Plaka ara..." class="h-9 w-full rounded-md border border-white/10 bg-white/5 pl-8 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-cyan-500/40"></div></div>
+                            <div id="trailerDDOptions" class="max-h-52 overflow-y-auto p-1"></div>
+                        </div>
+                    </div>
                     <div id="trailerDocsList"></div>
                 </div>
 
@@ -97,9 +111,16 @@ require_once __DIR__ . '/../includes/header.php';
                             <p class="text-xs text-white/50">Evrak paketine eklenecek şoförü seçin</p>
                         </div>
                     </div>
-                    <select id="driverSelect" onchange="onDriverChange()" class="mb-4 h-11 w-full rounded-lg border border-white/10 bg-[#0B1220] px-3 text-sm outline-none focus:border-purple-500/50">
-                        <option value="">Şoför seçin...</option>
-                    </select>
+                    <div class="relative mb-4" id="driverDropdownWrap">
+                        <button type="button" onclick="toggleDD('driver')" id="driverDDBtn" class="flex h-11 w-full items-center justify-between rounded-lg border border-white/10 bg-[#0B1220] px-3 text-sm outline-none transition-all hover:border-purple-500/40">
+                            <span class="truncate text-white/40" id="driverDDLabel">Şoför seçin...</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-white/40"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+                        <div id="driverDDPanel" class="absolute left-0 right-0 top-[calc(100%+4px)] z-50 hidden overflow-hidden rounded-lg border border-white/15 bg-[#0f1a2e] shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+                            <div class="border-b border-white/10 p-2"><div class="relative"><i data-lucide="search" class="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-white/30"></i><input type="text" id="driverDDSearch" oninput="filterDD('driver')" placeholder="İsim veya TC ara..." class="h-9 w-full rounded-md border border-white/10 bg-white/5 pl-8 pr-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-purple-500/40"></div></div>
+                            <div id="driverDDOptions" class="max-h-52 overflow-y-auto p-1"></div>
+                        </div>
+                    </div>
                     <div id="driverDocsList"></div>
                 </div>
             </div>
@@ -124,35 +145,163 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script>
-let trucks = [], trailers = [], drivers = [];
+const { PDFDocument, degrees } = PDFLib;
+
+const DEFAULT_VEHICLE_DOCS = [
+    { type: 'ruhsat', label: 'Ruhsat' }, { type: 'tasitKarti', label: 'Taşıt Kartı' }, { type: 't9Adr', label: 'T9 ADR' },
+    { type: 'trafikSigortasi', label: 'Trafik Sigortası' }, { type: 'tehlikeliMaddeSigortasi', label: 'Tehlikeli Madde Sigortası' },
+    { type: 'kasko', label: 'Kasko' }, { type: 'tuvturk', label: 'TÜVTÜRK' }, { type: 'egzozEmisyon', label: 'Egzoz Emisyon' },
+    { type: 'sayacKalibrasyon', label: 'Sayaç Kalibrasyon' }, { type: 'takografKalibrasyon', label: 'Takograf Kalibrasyon' },
+    { type: 'faaliyetBelgesi', label: 'Faaliyet Belgesi' }, { type: 'yetkiBelgesi', label: 'Yetki Belgesi' },
+    { type: 'hortumBasin', label: 'Hortum Basın.' }, { type: 'tankMuayeneSertifikasi', label: 'Tank Muayene Sertifikası' },
+    { type: 'vergiLevhasi', label: 'Vergi Levhası' },
+];
+const DEFAULT_DRIVER_DOCS = [
+    { type: 'kimlik', label: 'Kimlik' }, { type: 'ehliyet', label: 'Ehliyet' }, { type: 'src5', label: 'SRC 5' }, { type: 'psikoteknik', label: 'Psikoteknik' },
+    { type: 'adliSicil', label: 'Adli Sicil' }, { type: 'iseGirisBildirge', label: 'İşe Giriş Bildirgesi' },
+    { type: 'ikametgah', label: 'İkametgah' }, { type: 'kkdZimmet', label: 'KKD Zimmet' },
+    { type: 'saglikMuayene', label: 'Sağlık Muayene' }, { type: 'isgEgitimBelgesi', label: 'İSG Eğitim Belgesi' },
+    { type: 'yanginEgitimSertifikasi', label: 'Yangın Eğitim Sertifikası' },
+];
+function ensureDocs(docs, defaults) {
+    const existing = docs || [];
+    return defaults.map(def => {
+        const found = existing.find(d => d.type === def.type);
+        return found ? { ...def, ...found } : { ...def, fileName: null, filePath: null, expiryDate: null };
+    });
+}
+
+// TIR filtreleme
+const TIR_TRUCK_EXCLUDE = ['tankMuayeneSertifikasi', 'sayacKalibrasyon', 'hortumBasin'];
+const TIR_TRAILER_EXCLUDE = ['egzozEmisyon', 'trafikSigortasi', 'takografKalibrasyon'];
+const TRAILER_GENERAL_EXCLUDE = ['yetkiBelgesi', 'vergiLevhasi', 'faaliyetBelgesi'];
+function filterDocsForType(docs, vehicleType, ownerType) {
+    let filtered = docs;
+    if (ownerType === 'trailer') filtered = filtered.filter(d => !TRAILER_GENERAL_EXCLUDE.includes(d.type));
+    if (vehicleType === 'tir') {
+        const exclude = ownerType === 'truck' ? TIR_TRUCK_EXCLUDE : TIR_TRAILER_EXCLUDE;
+        filtered = filtered.filter(d => !exclude.includes(d.type));
+    }
+    return filtered;
+}
+
+let allTrucks = [], allTrailers = [], allDrivers = [];
+let selectedTruckId = null, selectedTrailerId = null, selectedDriverId = null;
 let selectedTruckDocs = new Set(), selectedTrailerDocs = new Set(), selectedDriverDocs = new Set();
+let ddOpen = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        [trucks, trailers, drivers] = await Promise.all([
-            apiRequest('/api/trucks'), apiRequest('/api/trailers'), apiRequest('/api/drivers')
+        const [rawTrucks, rawTrailers, rawDrivers, vehicleSets, supplierCompanies] = await Promise.all([
+            apiRequest('/api/trucks'), apiRequest('/api/trailers'), apiRequest('/api/drivers'),
+            loadVehicleSetsWithStore(),
+            apiRequest('/api/supplier-companies').catch(() => []),
         ]);
-        document.getElementById('truckCount').textContent = trucks.length;
-        document.getElementById('trailerCount').textContent = trailers.length;
-        document.getElementById('driverCount').textContent = drivers.length;
 
-        const truckSel = document.getElementById('truckSelect');
-        trucks.forEach(t => { truckSel.innerHTML += `<option value="${t.id}">${escapeHtml(t.plate)} ${t.category==='supplier'?'(Tedarikçi)':'(Asmira)'}</option>`; });
-        const trailerSel = document.getElementById('trailerSelect');
-        trailers.forEach(t => { trailerSel.innerHTML += `<option value="${t.id}">${escapeHtml(t.plate)} ${t.category==='supplier'?'(Tedarikçi)':'(Asmira)'}</option>`; });
-        const driverSel = document.getElementById('driverSelect');
-        drivers.forEach(d => { driverSel.innerHTML += `<option value="${d.id}">${escapeHtml(d.name)} (${escapeHtml(d.tcNo||'')})</option>`; });
+        // Asmira araçları (vehicle set üzerinden)
+        const asmiraSets = (vehicleSets || []).filter(s => s.category === 'asmira');
+        asmiraSets.forEach(set => {
+            const vType = set.vehicleType || 'tir';
+            const truck = rawTrucks.find(t => t.id === set.truckId);
+            if (truck) allTrucks.push({ id: truck.id, plate: truck.plate, documents: truck.documents, source: 'asmira', companyName: 'Asmira', vehicleType: vType });
+            if (vType === 'tir' && set.trailerId) {
+                const trailer = rawTrailers.find(t => t.id === set.trailerId);
+                if (trailer) allTrailers.push({ id: trailer.id, plate: trailer.plate, documents: trailer.documents, source: 'asmira', companyName: 'Asmira', vehicleType: vType });
+            }
+        });
+
+        // Tedarikçi araçları
+        const companies = Array.isArray(supplierCompanies) ? supplierCompanies : [];
+        companies.forEach(c => {
+            (c.vehicles || []).forEach(v => {
+                const vType = v.vehicleType || 'tir';
+                allTrucks.push({ id: 'sup_' + c.id + '_' + v.id + '_truck', plate: v.vehiclePlate, documents: v.documents, source: 'supplier', companyName: c.name, vehicleType: vType });
+                if (vType === 'tir' && v.trailerPlate) {
+                    allTrailers.push({ id: 'sup_' + c.id + '_' + v.id + '_trailer', plate: v.trailerPlate, documents: v.trailerDocuments, source: 'supplier', companyName: c.name, vehicleType: vType });
+                }
+            });
+        });
+
+        // Şoförler
+        const asmiraDrivers = rawDrivers.filter(d => (d.category || 'asmira') === 'asmira');
+        asmiraDrivers.forEach(d => allDrivers.push({ id: d.id, name: d.name, tcNo: d.tcNo, documents: d.documents, source: 'asmira', companyName: 'Asmira' }));
+        const supplierDrivers = rawDrivers.filter(d => d.category === 'supplier');
+        supplierDrivers.forEach(d => allDrivers.push({ id: d.id, name: d.name, tcNo: d.tcNo, documents: d.documents, source: 'supplier', companyName: d.companyName || '' }));
+
+        document.getElementById('truckCount').textContent = allTrucks.length;
+        document.getElementById('trailerCount').textContent = allTrailers.length;
+        document.getElementById('driverCount').textContent = allDrivers.length;
     } catch (e) { showToast('Veriler yüklenemedi', 'error'); }
 });
 
-function onTruckChange() { selectedTruckDocs = new Set(); renderTruckDocs(); updateSummary(); }
-function onTrailerChange() { selectedTrailerDocs = new Set(); renderTrailerDocs(); updateSummary(); }
-function onDriverChange() { selectedDriverDocs = new Set(); renderDriverDocs(); updateSummary(); }
+// ===== DROPDOWN =====
+document.addEventListener('click', (e) => {
+    if (ddOpen && !e.target.closest('#' + ddOpen + 'DropdownWrap')) closeDD();
+});
+function toggleDD(type) {
+    if (ddOpen === type) { closeDD(); return; }
+    closeDD(); ddOpen = type;
+    document.getElementById(type + 'DDPanel').classList.remove('hidden');
+    const s = document.getElementById(type + 'DDSearch'); s.value = ''; s.focus();
+    filterDD(type);
+    setTimeout(() => document.getElementById(type + 'DropdownWrap').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+function closeDD() {
+    if (ddOpen) { document.getElementById(ddOpen + 'DDPanel').classList.add('hidden'); ddOpen = null; }
+}
+function filterDD(type) {
+    const q = document.getElementById(type + 'DDSearch').value.toLowerCase().trim();
+    const container = document.getElementById(type + 'DDOptions');
+    const items = type === 'truck' ? allTrucks : type === 'trailer' ? allTrailers : allDrivers;
+    const filtered = q ? items.filter(i => {
+        const text = (type === 'driver' ? i.name : i.plate) + ' ' + (i.companyName || '') + ' ' + (i.tcNo || '');
+        return text.toLowerCase().includes(q);
+    }) : items;
+    const asmira = filtered.filter(i => i.source === 'asmira');
+    const supplier = filtered.filter(i => i.source === 'supplier');
+    let html = '';
+    if (asmira.length > 0) {
+        html += '<div class="px-2 py-1.5 text-[10px] font-bold tracking-widest text-emerald-400/60">ASMİRA ÖZMAL</div>';
+        asmira.forEach(i => { html += ddOption(type, i); });
+    }
+    if (supplier.length > 0) {
+        html += '<div class="px-2 py-1.5 text-[10px] font-bold tracking-widest text-orange-400/60">TEDARİKÇİ</div>';
+        supplier.forEach(i => { html += ddOption(type, i); });
+    }
+    if (!html) html = '<div class="px-3 py-4 text-center text-xs text-white/30">Sonuç bulunamadı</div>';
+    container.innerHTML = html;
+    lucide.createIcons({nodes:[container]});
+}
+function ddOption(type, item) {
+    const selId = type === 'truck' ? selectedTruckId : type === 'trailer' ? selectedTrailerId : selectedDriverId;
+    const isSel = selId === item.id;
+    const color = item.source === 'asmira' ? 'emerald' : 'orange';
+    const label = type === 'driver' ? item.name : item.plate;
+    const sub = type === 'driver' ? (item.companyName || '') + (item.tcNo ? ' \u2022 ' + item.tcNo : '') : (item.companyName || '');
+    return '<button type="button" onclick="selectDD(\'' + type + '\',\'' + item.id + '\')" class="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm transition-all ' + (isSel ? 'bg-white/10' : 'hover:bg-white/[0.06]') + '">' +
+        '<div class="h-2 w-2 shrink-0 rounded-full bg-' + color + '-500 shadow-[0_0_6px_rgba(' + (color==='emerald'?'52,211,153':'249,115,22') + ',0.5)]"></div>' +
+        '<div class="flex-1 min-w-0"><div class="font-medium text-white truncate">' + escapeHtml(label) + '</div>' + (sub ? '<div class="text-xs text-white/40 truncate">' + escapeHtml(sub) + '</div>' : '') + '</div>' +
+        (isSel ? '<i data-lucide="check" class="h-4 w-4 shrink-0 text-emerald-400"></i>' : '') +
+    '</button>';
+}
+function selectDD(type, id) {
+    if (type === 'truck') { selectedTruckId = id; selectedTruckDocs = new Set(); renderTruckDocs(); }
+    else if (type === 'trailer') { selectedTrailerId = id; selectedTrailerDocs = new Set(); renderTrailerDocs(); }
+    else { selectedDriverId = id; selectedDriverDocs = new Set(); renderDriverDocs(); }
+    const items = type === 'truck' ? allTrucks : type === 'trailer' ? allTrailers : allDrivers;
+    const item = items.find(i => i.id === id);
+    const label = type === 'driver' ? item?.name : item?.plate;
+    const color = item?.source === 'asmira' ? 'emerald' : 'orange';
+    const btnLabel = document.getElementById(type + 'DDLabel');
+    if (item) { btnLabel.className = 'truncate flex items-center gap-2'; btnLabel.innerHTML = '<span class="h-2 w-2 rounded-full bg-' + color + '-500"></span>' + escapeHtml(label); }
+    closeDD(); updateSummary();
+}
 
-function getSelectedTruck() { return trucks.find(t => t.id === document.getElementById('truckSelect').value); }
-function getSelectedTrailer() { return trailers.find(t => t.id === document.getElementById('trailerSelect').value); }
-function getSelectedDriver() { return drivers.find(d => d.id === document.getElementById('driverSelect').value); }
+function getSelectedTruck() { return allTrucks.find(t => t.id === selectedTruckId); }
+function getSelectedTrailer() { return allTrailers.find(t => t.id === selectedTrailerId); }
+function getSelectedDriver() { return allDrivers.find(d => d.id === selectedDriverId); }
 
 function renderDocChecklist(containerId, docs, selectedSet, toggleFn, selectAllFn, colorClass) {
     const container = document.getElementById(containerId);
@@ -179,24 +328,26 @@ function renderDocChecklist(containerId, docs, selectedSet, toggleFn, selectAllF
 
 function renderTruckDocs() {
     const t = getSelectedTruck();
-    renderDocChecklist('truckDocsList', t?.documents, selectedTruckDocs, 'toggleTruckDoc', 'selectAllTruck', 'text-blue-400');
+    const docs = t ? filterDocsForType(ensureDocs(t.documents, DEFAULT_VEHICLE_DOCS), t.vehicleType, 'truck') : null;
+    renderDocChecklist('truckDocsList', docs, selectedTruckDocs, 'toggleTruckDoc', 'selectAllTruck', 'text-blue-400');
 }
 function renderTrailerDocs() {
     const t = getSelectedTrailer();
-    renderDocChecklist('trailerDocsList', t?.documents, selectedTrailerDocs, 'toggleTrailerDoc', 'selectAllTrailer', 'text-cyan-400');
+    const docs = t ? filterDocsForType(ensureDocs(t.documents, DEFAULT_VEHICLE_DOCS), t.vehicleType, 'trailer') : null;
+    renderDocChecklist('trailerDocsList', docs, selectedTrailerDocs, 'toggleTrailerDoc', 'selectAllTrailer', 'text-cyan-400');
 }
 function renderDriverDocs() {
     const d = getSelectedDriver();
-    renderDocChecklist('driverDocsList', d?.documents, selectedDriverDocs, 'toggleDriverDoc', 'selectAllDriver', 'text-purple-400');
+    renderDocChecklist('driverDocsList', d ? ensureDocs(d.documents, DEFAULT_DRIVER_DOCS) : null, selectedDriverDocs, 'toggleDriverDoc', 'selectAllDriver', 'text-purple-400');
 }
 
 function toggleTruckDoc(type) { selectedTruckDocs.has(type) ? selectedTruckDocs.delete(type) : selectedTruckDocs.add(type); renderTruckDocs(); updateSummary(); }
 function toggleTrailerDoc(type) { selectedTrailerDocs.has(type) ? selectedTrailerDocs.delete(type) : selectedTrailerDocs.add(type); renderTrailerDocs(); updateSummary(); }
 function toggleDriverDoc(type) { selectedDriverDocs.has(type) ? selectedDriverDocs.delete(type) : selectedDriverDocs.add(type); renderDriverDocs(); updateSummary(); }
 
-function selectAllTruck() { const t = getSelectedTruck(); if (!t) return; t.documents.filter(d=>d.fileName).forEach(d=>selectedTruckDocs.add(d.type)); renderTruckDocs(); updateSummary(); }
-function selectAllTrailer() { const t = getSelectedTrailer(); if (!t) return; t.documents.filter(d=>d.fileName).forEach(d=>selectedTrailerDocs.add(d.type)); renderTrailerDocs(); updateSummary(); }
-function selectAllDriver() { const d = getSelectedDriver(); if (!d) return; d.documents.filter(dd=>dd.fileName).forEach(dd=>selectedDriverDocs.add(dd.type)); renderDriverDocs(); updateSummary(); }
+function selectAllTruck() { const t = getSelectedTruck(); if (!t) return; filterDocsForType(ensureDocs(t.documents, DEFAULT_VEHICLE_DOCS), t.vehicleType, 'truck').filter(d=>d.fileName).forEach(d=>selectedTruckDocs.add(d.type)); renderTruckDocs(); updateSummary(); }
+function selectAllTrailer() { const t = getSelectedTrailer(); if (!t) return; filterDocsForType(ensureDocs(t.documents, DEFAULT_VEHICLE_DOCS), t.vehicleType, 'trailer').filter(d=>d.fileName).forEach(d=>selectedTrailerDocs.add(d.type)); renderTrailerDocs(); updateSummary(); }
+function selectAllDriver() { const d = getSelectedDriver(); if (!d) return; ensureDocs(d.documents, DEFAULT_DRIVER_DOCS).filter(dd=>dd.fileName).forEach(dd=>selectedDriverDocs.add(dd.type)); renderDriverDocs(); updateSummary(); }
 
 function clearAllSelections() { selectedTruckDocs=new Set(); selectedTrailerDocs=new Set(); selectedDriverDocs=new Set(); renderTruckDocs(); renderTrailerDocs(); renderDriverDocs(); updateSummary(); }
 
@@ -219,19 +370,108 @@ function updateSummary() {
 
     let badges = '';
     const truck = getSelectedTruck();
-    if (truck) selectedTruckDocs.forEach(type => { const d = truck.documents.find(dd=>dd.type===type); if(d) badges += `<div class="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5"><i data-lucide="truck" class="h-3 w-3 text-blue-400"></i><span class="text-xs font-medium text-blue-300">${escapeHtml(d.label)}</span></div>`; });
+    if (truck) { const tDocs = filterDocsForType(ensureDocs(truck.documents, DEFAULT_VEHICLE_DOCS), truck.vehicleType, 'truck'); selectedTruckDocs.forEach(type => { const d = tDocs.find(dd=>dd.type===type); if(d) badges += `<div class="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5"><i data-lucide="truck" class="h-3 w-3 text-blue-400"></i><span class="text-xs font-medium text-blue-300">${escapeHtml(d.label)}</span></div>`; }); }
     const trailer = getSelectedTrailer();
-    if (trailer) selectedTrailerDocs.forEach(type => { const d = trailer.documents.find(dd=>dd.type===type); if(d) badges += `<div class="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5"><i data-lucide="container" class="h-3 w-3 text-cyan-400"></i><span class="text-xs font-medium text-cyan-300">${escapeHtml(d.label)}</span></div>`; });
+    if (trailer) { const trDocs = filterDocsForType(ensureDocs(trailer.documents, DEFAULT_VEHICLE_DOCS), trailer.vehicleType, 'trailer'); selectedTrailerDocs.forEach(type => { const d = trDocs.find(dd=>dd.type===type); if(d) badges += `<div class="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5"><i data-lucide="container" class="h-3 w-3 text-cyan-400"></i><span class="text-xs font-medium text-cyan-300">${escapeHtml(d.label)}</span></div>`; }); }
     const driver = getSelectedDriver();
-    if (driver) selectedDriverDocs.forEach(type => { const d = driver.documents.find(dd=>dd.type===type); if(d) badges += `<div class="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1.5"><i data-lucide="user-check" class="h-3 w-3 text-purple-400"></i><span class="text-xs font-medium text-purple-300">${escapeHtml(d.label)}</span></div>`; });
+    if (driver) { const drDocs = ensureDocs(driver.documents, DEFAULT_DRIVER_DOCS); selectedDriverDocs.forEach(type => { const d = drDocs.find(dd=>dd.type===type); if(d) badges += `<div class="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1.5"><i data-lucide="user-check" class="h-3 w-3 text-purple-400"></i><span class="text-xs font-medium text-purple-300">${escapeHtml(d.label)}</span></div>`; }); }
     document.getElementById('summaryBadges').innerHTML = badges;
     lucide.createIcons({nodes:[document.getElementById('summaryBadges')]});
 }
 
-function handleGeneratePDF() {
+async function handleGeneratePDF() {
     const total = selectedTruckDocs.size + selectedTrailerDocs.size + selectedDriverDocs.size;
     if (total === 0) { showToast('Lütfen en az bir evrak seçin', 'error'); return; }
-    showToast('PDF oluşturma özelliği sunucu tarafında hazırlanıyor...');
+
+    const btn = document.getElementById('generateBtn');
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px;height:16px;border-width:2px;"></div> PDF Hazırlanıyor...';
+
+    try {
+        // Seçili evrakların dosya yollarını topla
+        const filesToMerge = [];
+        const truck = getSelectedTruck();
+        if (truck) filterDocsForType(ensureDocs(truck.documents, DEFAULT_VEHICLE_DOCS), truck.vehicleType, 'truck').filter(d => selectedTruckDocs.has(d.type) && d.filePath).forEach(d => filesToMerge.push({ label: d.label, path: d.filePath, fileName: d.fileName }));
+        const trailer = getSelectedTrailer();
+        if (trailer) filterDocsForType(ensureDocs(trailer.documents, DEFAULT_VEHICLE_DOCS), trailer.vehicleType, 'trailer').filter(d => selectedTrailerDocs.has(d.type) && d.filePath).forEach(d => filesToMerge.push({ label: d.label, path: d.filePath, fileName: d.fileName }));
+        const driver = getSelectedDriver();
+        if (driver) ensureDocs(driver.documents, DEFAULT_DRIVER_DOCS).filter(d => selectedDriverDocs.has(d.type) && d.filePath).forEach(d => filesToMerge.push({ label: d.label, path: d.filePath, fileName: d.fileName }));
+
+        if (filesToMerge.length === 0) {
+            showToast('Seçili evraklarda dosya bulunamadı', 'error');
+            return;
+        }
+
+        const mergedPdf = await PDFDocument.create();
+
+        for (const file of filesToMerge) {
+            try {
+                const url = '/api/documents/download/' + file.path.split('/').map(s => encodeURIComponent(s)).join('/');
+                const response = await fetch(url);
+                if (!response.ok) { console.warn('Dosya indirilemedi:', file.path); continue; }
+                const arrayBuffer = await response.arrayBuffer();
+                const ext = (file.fileName || file.path).split('.').pop().toLowerCase();
+
+                if (ext === 'pdf') {
+                    const srcPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+                    const pages = await mergedPdf.copyPages(srcPdf, srcPdf.getPageIndices());
+                    pages.forEach(p => mergedPdf.addPage(p));
+                } else if (['jpg', 'jpeg'].includes(ext)) {
+                    const img = await mergedPdf.embedJpg(arrayBuffer);
+                    const dims = img.scaleToFit(595, 842); // A4
+                    const page = mergedPdf.addPage([595, 842]);
+                    page.drawImage(img, {
+                        x: (595 - dims.width) / 2,
+                        y: (842 - dims.height) / 2,
+                        width: dims.width,
+                        height: dims.height,
+                    });
+                } else if (ext === 'png') {
+                    const img = await mergedPdf.embedPng(arrayBuffer);
+                    const dims = img.scaleToFit(595, 842); // A4
+                    const page = mergedPdf.addPage([595, 842]);
+                    page.drawImage(img, {
+                        x: (595 - dims.width) / 2,
+                        y: (842 - dims.height) / 2,
+                        width: dims.width,
+                        height: dims.height,
+                    });
+                } else {
+                    console.warn('Desteklenmeyen dosya türü:', ext, file.path);
+                }
+            } catch (fileErr) {
+                console.error('Dosya işleme hatası:', file.path, fileErr);
+            }
+        }
+
+        if (mergedPdf.getPageCount() === 0) {
+            showToast('Birleştirilebilecek dosya bulunamadı', 'error');
+            return;
+        }
+
+        const pdfBytes = await mergedPdf.save();
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        const truckPlate = truck?.plate || '';
+        const trailerPlate = trailer?.plate || '';
+        const driverName = driver?.name || '';
+        const datePart = new Date().toISOString().slice(0, 10);
+        link.href = URL.createObjectURL(blob);
+        link.download = `Evrak_Paketi_${truckPlate}_${datePart}.pdf`.replace(/\s+/g, '_');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+
+        showToast(`${mergedPdf.getPageCount()} sayfa birleştirildi ve indirildi`, 'success');
+    } catch (e) {
+        console.error('PDF oluşturma hatası:', e);
+        showToast('PDF oluşturulamadı: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHTML;
+    }
 }
 </script>
 

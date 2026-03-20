@@ -3,6 +3,34 @@
  * Tüm sayfalar için ortak fonksiyonlar
  */
 
+// ============ SWIPE GESTURES ============
+(function() {
+    let touchStartX = 0, touchStartY = 0, touchEl = null;
+    document.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchEl = e.target;
+    }, { passive: true });
+    document.addEventListener('touchend', function(e) {
+        if (!touchEl) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+        // Dashboard ay değiştirme
+        if (typeof changeMonth === 'function') {
+            const agenda = document.getElementById('mobileAgenda');
+            if (agenda && agenda.contains(touchEl)) {
+                changeMonth(dx < 0 ? 1 : -1);
+            }
+        }
+        // Side panel kapatma (sağa swipe)
+        if (dx > 80) {
+            const panel = touchEl.closest('.doc-side-panel');
+            if (panel && typeof closePanel === 'function') closePanel();
+        }
+    }, { passive: true });
+})();
+
 // ============ MOBILE MENU ============
 function toggleMobileMenu() {
     const menu = document.getElementById('mobileMenu');
@@ -154,8 +182,9 @@ async function uploadFile(file, ownerId, ownerType, docType, expiryDate) {
     if (expiryDate) formData.append('expiryDate', expiryDate);
 
     const res = await fetch('/api/documents/upload', { method: 'POST', body: formData });
-    if (!res.ok) throw new Error('Dosya yüklenemedi');
-    return res.json();
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.details || 'Dosya yüklenemedi (' + res.status + ')');
+    return data;
 }
 
 // ============ LOADING SPINNER ============
@@ -170,7 +199,7 @@ function hideLoading(elementId) {
 }
 
 // ============ SHARED DOCUMENT STORE (localStorage) ============
-const DOC_STORE_KEYS = { trucks: 'asmira-trucks', trailers: 'asmira-trailers', drivers: 'asmira-drivers' };
+const DOC_STORE_KEYS = { trucks: 'asmira-trucks', trailers: 'asmira-trailers', drivers: 'asmira-drivers', vehicleSets: 'asmira-vehicle-sets' };
 
 function saveDocStore(key, data) {
     try { localStorage.setItem(DOC_STORE_KEYS[key], JSON.stringify(data)); } catch(e) {}
@@ -182,29 +211,45 @@ function loadDocStore(key) {
 async function loadTrucksWithStore() {
     try {
         const data = await apiRequest('/api/trucks');
-        if (data && data.length > 0) { saveDocStore('trucks', data); return data; }
+        if (Array.isArray(data)) { saveDocStore('trucks', data); return data; }
     } catch(e) {}
     return loadDocStore('trucks') || [];
 }
 async function loadTrailersWithStore() {
     try {
         const data = await apiRequest('/api/trailers');
-        if (data && data.length > 0) { saveDocStore('trailers', data); return data; }
+        if (Array.isArray(data)) { saveDocStore('trailers', data); return data; }
     } catch(e) {}
     return loadDocStore('trailers') || [];
 }
 async function loadDriversWithStore() {
     try {
         const data = await apiRequest('/api/drivers');
-        if (data && data.length > 0) { saveDocStore('drivers', data); return data; }
+        if (Array.isArray(data)) { saveDocStore('drivers', data); return data; }
     } catch(e) {}
     return loadDocStore('drivers') || [];
+}
+async function loadVehicleSetsWithStore() {
+    try {
+        const data = await apiRequest('/api/vehicle-sets');
+        if (Array.isArray(data)) { saveDocStore('vehicleSets', data); return data; }
+    } catch(e) {}
+    return loadDocStore('vehicleSets') || [];
+}
+
+// ============ DATE INPUT CALENDAR ICON FIX ============
+function fixDateInputIcons() {
+    document.querySelectorAll('input[type="date"], input[type="datetime-local"]').forEach(el => {
+        el.style.colorScheme = 'dark';
+    });
 }
 
 // ============ INIT ============
 document.addEventListener('DOMContentLoaded', function() {
-    // Re-initialize Lucide icons for any dynamic content
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+    fixDateInputIcons();
+    // Dinamik eklenen date input'ları da yakala
+    new MutationObserver(fixDateInputIcons).observe(document.body, { childList: true, subtree: true });
 });

@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/middleware.php';
 setCorsHeaders();
+requireApiAuth();
 
 $method = getMethod();
 
@@ -14,10 +16,12 @@ if ($method === 'GET') {
     $stmt = $db->query("SELECT data FROM supplier_data WHERE id = 1");
     $row = $stmt->fetch();
     if ($row) {
+        // DB'de kayıt var — boş bile olsa güvenilir veri
         header('Content-Type: application/json');
-        echo $row['data'];
+        echo $row['data'] ?: '[]';
     } else {
-        jsonResponse([]);
+        // DB'de hiç kayıt yok — ilk açılış sinyali
+        jsonResponse(['_uninitialized' => true]);
     }
     exit;
 }

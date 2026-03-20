@@ -108,16 +108,47 @@ let isEditing = false;
 let editForm = null;
 let addPortRegion = 'Ege';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem('asmira-port-wiki');
-    if (saved) { try { ports = JSON.parse(saved); } catch(e) { ports = [...DEFAULT_PORTS]; } }
-    else { ports = [...DEFAULT_PORTS]; }
+document.addEventListener('DOMContentLoaded', async () => {
+    // Eski localStorage verisini temizle
+    localStorage.removeItem('asmira-port-wiki');
+    await loadFromServer();
+});
+
+// Sekme/pencere tekrar görünür olunca sunucudan yenile (diğer cihazda değişiklik yapılmış olabilir)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !isEditing) loadFromServer();
+});
+
+async function loadFromServer() {
+    try {
+        const apiData = await apiRequest('/api/port-wiki');
+        if (Array.isArray(apiData)) {
+            ports = apiData;
+        } else if (apiData && apiData._uninitialized) {
+            ports = [...DEFAULT_PORTS];
+            await saveToServer();
+        } else {
+            ports = [...DEFAULT_PORTS];
+        }
+    } catch(e) {
+        console.error('Port Wiki yükleme hatası:', e);
+        showToast('Port Wiki sunucudan yüklenemedi: ' + (e.message || 'Bağlantı hatası'), 'error', 5000);
+        if (ports.length === 0) ports = [...DEFAULT_PORTS];
+    }
     ports.forEach(p => { if (!p.technicalData) p.technicalData = {}; if (!p.notes) p.notes = []; if (!p.contacts) p.contacts = []; if (!p.documents) p.documents = []; });
     document.getElementById('portCount').textContent = ports.length;
     renderPorts();
-});
+}
 
-function saveToStorage() { localStorage.setItem('asmira-port-wiki', JSON.stringify(ports)); }
+async function saveToServer() {
+    try {
+        const result = await apiRequest('/api/port-wiki', { method: 'PUT', body: JSON.stringify(ports) });
+        return true;
+    } catch(e) {
+        showToast('Sunucuya kaydedilemedi: ' + (e.message || 'Bağlantı hatası'), 'error', 5000);
+        return false;
+    }
+}
 
 function renderPorts() {
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
@@ -243,7 +274,7 @@ function saveEdit() {
     ports = ports.map(p => p.id === editForm.id ? editForm : p);
     selectedPortId = editForm.id;
     isEditing = false; editForm = null;
-    saveToStorage(); renderPorts(); renderDetail();
+    saveToServer(); renderPorts(); renderDetail();
     showToast('Liman güncellendi');
 }
 
@@ -271,7 +302,7 @@ function deleteSelectedPort() {
     const p = ports.find(x => x.id === selectedPortId);
     if (!confirmAction(`"${p?.name}" limanını silmek istediğinize emin misiniz?`)) return;
     ports = ports.filter(x => x.id !== selectedPortId);
-    saveToStorage(); closePortDetail(); renderPorts(); showToast('Liman silindi');
+    saveToServer(); closePortDetail(); renderPorts(); showToast('Liman silindi');
 }
 
 // ===== ADD PORT MODAL =====
@@ -295,7 +326,7 @@ function saveNewPort() {
     const warning = document.getElementById('newPortWarning').value.trim();
     if (!name || !city) { showToast('Lütfen liman adı ve şehir girin', 'error'); return; }
     ports.push({ id: 'port_'+Date.now(), name, city, region: addPortRegion, criticalWarning: warning || undefined, documents: [], contacts: [], notes: [], technicalData: {} });
-    saveToStorage(); closeModal('addPortModal'); renderPorts(); showToast('Liman eklendi');
+    saveToServer(); closeModal('addPortModal'); renderPorts(); showToast('Liman eklendi');
 }
 </script>
 

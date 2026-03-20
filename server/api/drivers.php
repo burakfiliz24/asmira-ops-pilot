@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/middleware.php';
 setCorsHeaders();
+requireApiAuth();
 
 $method = getMethod();
 
@@ -13,9 +15,24 @@ if (!$db) {
     jsonResponse(['success'=>true,'offline'=>true]);
 }
 
+// Auto-migration: category ve company_name kolonları yoksa ekle
+try {
+    $db->exec("ALTER TABLE drivers ADD COLUMN category VARCHAR(50) NOT NULL DEFAULT 'asmira'");
+} catch (Exception $e) { /* kolon zaten var */ }
+try {
+    $db->exec("ALTER TABLE drivers ADD COLUMN company_name VARCHAR(255) DEFAULT NULL");
+} catch (Exception $e) { /* kolon zaten var */ }
+
 // GET
 if ($method === 'GET') {
-    $drivers = $db->query("SELECT id, name, tc_no as tcNo, phone FROM drivers ORDER BY created_at")->fetchAll();
+    $category = $_GET['category'] ?? null;
+    if ($category) {
+        $stmt = $db->prepare("SELECT id, name, tc_no as tcNo, phone, category, company_name as companyName FROM drivers WHERE category = ? ORDER BY company_name, created_at");
+        $stmt->execute([$category]);
+        $drivers = $stmt->fetchAll();
+    } else {
+        $drivers = $db->query("SELECT id, name, tc_no as tcNo, phone, category, company_name as companyName FROM drivers ORDER BY created_at")->fetchAll();
+    }
     $docStmt = $db->prepare("SELECT doc_type as type, label, file_name as fileName, file_path as filePath, expiry_date as expiryDate FROM driver_documents WHERE driver_id = ?");
     foreach ($drivers as &$d) {
         $docStmt->execute([$d['id']]);
@@ -29,9 +46,11 @@ if ($method === 'POST') {
     $body = getJsonBody();
     validateRequired($body, ['name', 'tcNo', 'phone']);
     $id = $body['id'] ?? ('driver_' . time() . rand(100, 999));
+    $category = $body['category'] ?? 'asmira';
+    $companyName = $body['companyName'] ?? null;
 
-    $stmt = $db->prepare("INSERT INTO drivers (id, name, tc_no, phone) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$id, $body['name'], $body['tcNo'], $body['phone']]);
+    $stmt = $db->prepare("INSERT INTO drivers (id, name, tc_no, phone, category, company_name) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$id, $body['name'], $body['tcNo'], $body['phone'], $category, $companyName]);
 
     if (!empty($body['documents']) && is_array($body['documents'])) {
         $docStmt = $db->prepare("INSERT INTO driver_documents (driver_id, doc_type, label) VALUES (?, ?, ?)");
@@ -48,8 +67,8 @@ if ($method === 'PUT') {
     $id = $body['id'] ?? '';
     if (!$id) jsonResponse(['error' => 'id gerekli'], 400);
 
-    $stmt = $db->prepare("UPDATE drivers SET name = ?, tc_no = ?, phone = ? WHERE id = ?");
-    $stmt->execute([$body['name'], $body['tcNo'], $body['phone'], $id]);
+    $stmt = $db->prepare("UPDATE drivers SET name = ?, tc_no = ?, phone = ?, category = ?, company_name = ? WHERE id = ?");
+    $stmt->execute([$body['name'], $body['tcNo'], $body['phone'], $body['category'] ?? 'asmira', $body['companyName'] ?? null, $id]);
     jsonResponse(['success' => true]);
 }
 

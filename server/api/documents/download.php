@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../middleware.php';
+requireApiAuth();
 
 // CORS başlıkları (Content-Type sonra dosya tipine göre değişecek)
 header('Access-Control-Allow-Origin: ' . CORS_ALLOWED_ORIGIN);

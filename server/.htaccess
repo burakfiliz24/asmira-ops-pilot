@@ -1,19 +1,27 @@
 RewriteEngine On
 
+# Dizin listelemeyi kapat
+Options -Indexes
+
 # Güvenlik başlıkları
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "DENY"
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 </IfModule>
 
 # Hassas dosyalara erişimi engelle
-<FilesMatch "(db_config|config|\.env|\.log|\.sql|\.ini)">
+<FilesMatch "(db_config|config|middleware|helpers|\.env|\.log|\.sql|\.ini|\.bak|\.backup)">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>
 </FilesMatch>
+
+# .git dizinine erişimi engelle
+RewriteRule ^\.git - [F,L]
 
 # includes/ dizinine erişimi engelle
 RewriteRule ^includes/ - [F,L]
@@ -43,8 +51,12 @@ RewriteRule ^logs/ - [F,L]
     ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
 
-# API istekleri - mevcut .htaccess'e yönlendir
-RewriteRule ^api/ - [L]
+# API istekleri - PHP dosyası varsa doğrudan serve et, yoksa index.php'ye yönlendir
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^ index.php [L]
 
 # Statik dosyalar (assets, images vs.) doğrudan serve et
 RewriteCond %{REQUEST_FILENAME} -f [OR]

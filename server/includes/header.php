@@ -22,7 +22,14 @@ $navSections = [
                     ['title' => 'Tedarikçi Araçları', 'href' => '/vehicle-documents/suppliers'],
                 ]
             ],
-            ['title' => 'Şoför Evrakları', 'href' => '/driver-documents', 'icon' => 'user-check'],
+            [
+                'title' => 'Şoför Evrakları', 'href' => '/driver-documents', 'icon' => 'user-check',
+                'children' => [
+                    ['title' => 'Asmira Şoförler', 'href' => '/driver-documents/asmira'],
+                    ['title' => 'Tedarikçi Şoförler', 'href' => '/driver-documents/suppliers'],
+                ]
+            ],
+            ['title' => 'Teslimatçı Evrakları', 'href' => '/delivery-documents', 'icon' => 'package'],
             ['title' => 'Evrak Paketi', 'href' => '/document-package', 'icon' => 'package-check'],
             ['title' => 'Dilekçeler', 'href' => '/petitions', 'icon' => 'file-text'],
             [
@@ -47,9 +54,16 @@ function isActivePage(string $href, string $currentPage): bool {
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Asmira Ops - <?= htmlspecialchars($pageTitle ?? 'Operasyon Yönetimi') ?></title>
     <link rel="icon" href="/assets/img/favicon.ico" type="image/x-icon">
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0b1120">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Asmira Ops">
+    <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
     <!-- TailwindCSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -66,14 +80,26 @@ function isActivePage(string $href, string $currentPage): bool {
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260318">
+    <!-- Date picker icon beyaz - inline garantili -->
+    <style>
+        input[type="date"], input[type="datetime-local"] { color-scheme: dark; }
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(2) !important;
+            cursor: pointer;
+            opacity: 1 !important;
+        }
+    </style>
+    <!-- Shared JS -->
+    <script src="/assets/js/app.js?v=20260316b"></script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-[#0b1120] via-[#0f172a] to-[#0b1120] text-white">
 
 <!-- Mobile Header -->
 <header class="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b border-white/10 bg-[#0b1120]/95 px-4 backdrop-blur-md lg:hidden">
     <div class="flex items-center gap-3">
-        <img src="/assets/img/asmira-marine-logo.png" alt="Asmira Marine" class="h-8 w-auto object-contain brightness-0 invert">
+        <img src="/assets/img/asmira-energy-logo.png" alt="Asmira Energy" class="h-8 w-auto object-contain">
     </div>
     <button type="button" onclick="toggleMobileMenu()" class="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white" id="mobileMenuBtn">
         <i data-lucide="menu" class="h-5 w-5"></i>
@@ -97,7 +123,7 @@ function isActivePage(string $href, string $currentPage): bool {
             <div class="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/30"><?= $section['title'] ?></div>
             <div class="space-y-1">
                 <?php foreach ($section['items'] as $item):
-                    if (!empty($item['adminOnly']) && !isAdmin()) continue;
+                    if (!empty($item['adminOnly']) && !isManagerOrAdmin()) continue;
                     $active = isActivePage($item['href'], $currentPage);
                 ?>
                     <?php if (!empty($item['children'])): ?>
@@ -148,67 +174,133 @@ function isActivePage(string $href, string $currentPage): bool {
     <aside class="sticky top-0 hidden h-screen w-72 shrink-0 flex-col bg-[#0b1120]/80 text-white shadow-[4px_0_24px_-2px_rgba(0,0,0,0.5)] backdrop-blur-md lg:flex">
         <!-- Logo -->
         <div class="relative flex w-full flex-col items-center justify-center px-4 pb-1 pt-5">
-            <img src="/assets/img/asmira-energy-logo.png" alt="Asmira Energy" class="w-full max-w-[240px] object-contain">
+            <img src="/assets/img/asmira-energy-logo.png" alt="Asmira Energy" class="w-full max-w-[180px] object-contain">
             <!-- Ocean Scene -->
-            <div class="relative mt-2 h-20 w-full overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0b1120]/40"></div>
-                <!-- Stars -->
-                <div class="absolute" style="left:15%;top:10%;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,0.3)"></div>
-                <div class="absolute" style="left:45%;top:6%;width:1.5px;height:1.5px;border-radius:50%;background:rgba(255,255,255,0.2)"></div>
-                <div class="absolute" style="left:75%;top:12%;width:1px;height:1px;border-radius:50%;background:rgba(255,255,255,0.25)"></div>
-                <div class="absolute" style="left:60%;top:3%;width:1.5px;height:1.5px;border-radius:50%;background:rgba(255,255,255,0.15)"></div>
-                <!-- Ship 1 - Large cargo ship -->
-                <div class="ship-bob absolute" style="bottom:8px">
+            <div class="relative mt-2 h-28 w-full overflow-hidden rounded-lg" style="background:linear-gradient(to bottom, #060d1a 0%, #0a1628 40%, #0c2040 100%);">
+                <!-- Moon -->
+                <div class="sidebar-moon absolute rounded-full" style="top:6px;right:18px;width:12px;height:12px;background:radial-gradient(circle at 35% 35%, #e8f0ff, #8aa0c0);border-radius:50%;"></div>
+                <!-- Moon reflection on water -->
+                <div class="absolute" style="bottom:0;right:22px;width:4px;height:22px;background:linear-gradient(to bottom, rgba(200,220,255,0.12), transparent);filter:blur(3px);border-radius:2px;"></div>
+
+                <!-- Stars (brighter, twinkling) -->
+                <div class="sidebar-star absolute rounded-full bg-white" style="left:10%;top:8%;width:2.5px;height:2.5px;--dur:2.5s;--delay:0s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-white" style="left:30%;top:4%;width:1.5px;height:1.5px;--dur:3.5s;--delay:0.8s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-cyan-200" style="left:50%;top:12%;width:2px;height:2px;--dur:3s;--delay:1.5s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-white" style="left:70%;top:6%;width:2px;height:2px;--dur:4s;--delay:0.3s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-white" style="left:88%;top:14%;width:1.5px;height:1.5px;--dur:2.8s;--delay:2s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-cyan-100" style="left:22%;top:16%;width:1.5px;height:1.5px;--dur:3.2s;--delay:1.2s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-white" style="left:62%;top:3%;width:1.5px;height:1.5px;--dur:4.5s;--delay:0.6s;"></div>
+                <div class="sidebar-star absolute rounded-full bg-white" style="left:42%;top:18%;width:1px;height:1px;--dur:3.8s;--delay:2.5s;"></div>
+
+                <!-- Lighthouse -->
+                <div class="absolute" style="bottom:10px;right:10%;z-index:3;">
+                    <svg width="12" height="38" viewBox="0 0 12 38">
+                        <polygon points="3,8 9,8 10,36 2,36" fill="#14253d" stroke="#1e3a58" stroke-width="0.5"/>
+                        <rect x="1" y="34" width="10" height="4" rx="1" fill="#10203a" stroke="#1e3a58" stroke-width="0.4"/>
+                        <rect x="3.5" y="5" width="5" height="4" rx="1" fill="#14253d" stroke="#1e3a58" stroke-width="0.4"/>
+                        <circle cx="6" cy="6.5" r="2" fill="#ffdd77" style="animation: lighthouseLantern 6s ease-in-out infinite;">
+                        </circle>
+                        <circle cx="6" cy="6.5" r="4" fill="#ffdd77" opacity="0.08"/>
+                        <rect x="3" y="14" width="6" height="1.5" fill="rgba(192,57,43,0.5)" rx="0.3"/>
+                        <rect x="3.2" y="22" width="5.6" height="1.5" fill="rgba(192,57,43,0.5)" rx="0.3"/>
+                        <rect x="3.5" y="30" width="5" height="1.5" fill="rgba(192,57,43,0.5)" rx="0.3"/>
+                        <rect x="4" y="16" width="4" height="2.5" rx="0.3" fill="#060e1a" stroke="#1e3a58" stroke-width="0.3"/>
+                        <rect x="4.2" y="24" width="3.6" height="2.5" rx="0.3" fill="#060e1a" stroke="#1e3a58" stroke-width="0.3"/>
+                    </svg>
+                </div>
+
+                <!-- Ship 1 - Large tanker -->
+                <div class="ship-bob absolute" style="bottom:10px">
                     <div class="relative">
-                        <svg width="72" height="42" viewBox="0 0 48 28" fill="none">
-                            <path d="M2,22 L6,26 H42 L46,22 Z" fill="rgba(96,165,250,0.15)" stroke="rgba(96,165,250,0.5)" stroke-width="0.8"/>
-                            <rect x="8" y="17" width="32" height="5" rx="0.5" fill="rgba(96,165,250,0.1)" stroke="rgba(96,165,250,0.35)" stroke-width="0.7"/>
-                            <rect x="14" y="10" width="12" height="7" rx="0.5" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.3)" stroke-width="0.6"/>
-                            <rect class="ship-window" x="16" y="12" width="2.5" height="1.5" rx="0.3" fill="rgba(251,191,36,0.5)"/>
-                            <rect class="ship-window-2" x="20" y="12" width="2.5" height="1.5" rx="0.3" fill="rgba(251,191,36,0.4)"/>
-                            <rect x="28" y="12" width="3" height="5" rx="0.3" fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.3)" stroke-width="0.5"/>
-                            <line x1="28" y1="13.5" x2="31" y2="13.5" stroke="rgba(239,68,68,0.4)" stroke-width="1"/>
-                            <line x1="20" y1="5" x2="20" y2="10" stroke="rgba(148,163,184,0.3)" stroke-width="0.5"/>
-                            <circle cx="20" cy="5" r="1" fill="rgba(239,68,68,0.5)"/>
-                            <line x1="42" y1="18" x2="46" y2="22" stroke="rgba(96,165,250,0.3)" stroke-width="0.5"/>
+                        <svg width="90" height="50" viewBox="0 0 60 34" fill="none">
+                            <!-- Hull -->
+                            <path d="M2,26 L7,32 H53 L58,26 Z" fill="rgba(96,165,250,0.18)" stroke="rgba(96,165,250,0.55)" stroke-width="0.8"/>
+                            <line x1="8" y1="28" x2="52" y2="28" stroke="rgba(96,165,250,0.25)" stroke-width="0.4"/>
+                            <!-- Portholes -->
+                            <circle cx="14" cy="24" r="1" fill="rgba(6,10,20,0.8)" stroke="rgba(96,165,250,0.4)" stroke-width="0.4"/>
+                            <circle cx="20" cy="24" r="1" fill="rgba(6,10,20,0.8)" stroke="rgba(96,165,250,0.4)" stroke-width="0.4"/>
+                            <circle cx="40" cy="24" r="1" fill="rgba(6,10,20,0.8)" stroke="rgba(96,165,250,0.4)" stroke-width="0.4"/>
+                            <circle cx="46" cy="24" r="1" fill="rgba(6,10,20,0.8)" stroke="rgba(96,165,250,0.4)" stroke-width="0.4"/>
+                            <!-- Cabin -->
+                            <rect x="10" y="18" width="34" height="8" rx="0.8" fill="rgba(96,165,250,0.1)" stroke="rgba(96,165,250,0.35)" stroke-width="0.7"/>
+                            <!-- Rear cabin -->
+                            <rect x="46" y="20" width="8" height="6" rx="0.5" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.3)" stroke-width="0.5"/>
+                            <!-- Bridge -->
+                            <rect x="16" y="10" width="18" height="8" rx="1" fill="rgba(96,165,250,0.08)" stroke="rgba(96,165,250,0.35)" stroke-width="0.6"/>
+                            <!-- Bridge windows -->
+                            <rect class="ship-window" x="18" y="12" width="4" height="3" rx="0.3" fill="rgba(251,191,36,0.45)"/>
+                            <rect class="ship-window-2" x="24" y="12" width="4" height="3" rx="0.3" fill="rgba(96,165,250,0.25)"/>
+                            <rect x="30" y="12" width="2.5" height="3" rx="0.3" fill="rgba(251,191,36,0.2)"/>
+                            <!-- Cabin windows -->
+                            <rect x="13" y="20" width="3" height="2" rx="0.2" fill="rgba(96,165,250,0.2)"/>
+                            <rect x="18" y="20" width="3" height="2" rx="0.2" fill="rgba(251,191,36,0.2)"/>
+                            <rect x="23" y="20" width="3" height="2" rx="0.2" fill="rgba(96,165,250,0.2)"/>
+                            <rect x="28" y="20" width="3" height="2" rx="0.2" fill="rgba(251,191,36,0.15)"/>
+                            <rect x="33" y="20" width="3" height="2" rx="0.2" fill="rgba(96,165,250,0.2)"/>
+                            <rect x="38" y="20" width="3" height="2" rx="0.2" fill="rgba(96,165,250,0.2)"/>
+                            <!-- Funnel -->
+                            <rect x="35" y="5" width="5" height="5" rx="0.5" fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.3)" stroke-width="0.5"/>
+                            <rect x="35" y="7" width="5" height="1.5" fill="rgba(239,68,68,0.4)"/>
+                            <!-- Mast -->
+                            <line x1="26" y1="3" x2="26" y2="10" stroke="rgba(148,163,184,0.35)" stroke-width="0.5"/>
+                            <circle cx="26" cy="3" r="1.2" fill="rgba(239,68,68,0.6)"/>
+                            <circle cx="26" cy="3" r="2.5" fill="rgba(239,68,68,0.1)"/>
+                            <!-- Bow -->
+                            <line x1="53" y1="21" x2="58" y2="26" stroke="rgba(96,165,250,0.35)" stroke-width="0.5"/>
                         </svg>
-                        <div class="ship-smoke absolute" style="left:42px;top:10px;width:4px;height:4px;border-radius:50%;background:rgba(148,163,184,0.3)"></div>
-                        <div class="ship-smoke-2 absolute" style="left:44px;top:11px;width:3px;height:3px;border-radius:50%;background:rgba(148,163,184,0.2)"></div>
-                        <div class="ship-smoke-3 absolute" style="left:43px;top:9px;width:3.5px;height:3.5px;border-radius:50%;background:rgba(148,163,184,0.25)"></div>
-                        <div class="ship-wake absolute" style="left:-10px;bottom:2px;height:2px;width:14px;border-radius:9999px;background:linear-gradient(to left,rgba(34,211,238,0.2),transparent)"></div>
-                        <div class="absolute" style="bottom:-4px;left:10%;right:10%;height:5px;border-radius:9999px;background:rgba(96,165,250,0.15);filter:blur(4px)"></div>
+                        <!-- Smoke -->
+                        <div class="ship-smoke absolute" style="left:54px;top:3px;width:5px;height:5px;border-radius:50%;background:rgba(148,163,184,0.4)"></div>
+                        <div class="ship-smoke-2 absolute" style="left:56px;top:4px;width:4px;height:4px;border-radius:50%;background:rgba(148,163,184,0.3)"></div>
+                        <div class="ship-smoke-3 absolute" style="left:55px;top:2px;width:4.5px;height:4.5px;border-radius:50%;background:rgba(148,163,184,0.35)"></div>
+                        <!-- Wake -->
+                        <div class="ship-wake absolute" style="left:-12px;bottom:4px;height:2px;width:18px;border-radius:9999px;background:linear-gradient(to left,rgba(34,211,238,0.25),transparent)"></div>
+                        <div class="absolute" style="left:-8px;bottom:7px;height:1.5px;width:12px;border-radius:9999px;background:linear-gradient(to left,rgba(34,211,238,0.15),transparent)"></div>
+                        <!-- Water reflection -->
+                        <div class="absolute" style="bottom:-5px;left:8%;right:8%;height:6px;border-radius:9999px;background:rgba(96,165,250,0.12);filter:blur(5px)"></div>
                     </div>
                 </div>
-                <!-- Ship 2 - Smaller vessel -->
-                <div class="ship-bob-2 absolute" style="bottom:10px">
+
+                <!-- Ship 2 - Smaller vessel (opposite direction) -->
+                <div class="ship-bob-2 absolute" style="bottom:14px">
                     <div class="relative">
-                        <svg width="52" height="32" viewBox="0 0 32 20" fill="none" style="transform:scaleX(-1)">
-                            <path d="M2,16 L4,18 H28 L30,16 Z" fill="rgba(6,182,212,0.12)" stroke="rgba(6,182,212,0.4)" stroke-width="0.7"/>
-                            <rect x="6" y="12" width="20" height="4" rx="0.5" fill="rgba(6,182,212,0.08)" stroke="rgba(6,182,212,0.3)" stroke-width="0.6"/>
-                            <rect x="10" y="7" width="8" height="5" rx="0.5" fill="rgba(6,182,212,0.06)" stroke="rgba(6,182,212,0.25)" stroke-width="0.5"/>
-                            <rect class="ship-window" x="12" y="8.5" width="2" height="1.5" rx="0.3" fill="rgba(251,191,36,0.4)"/>
-                            <rect class="ship-window-2" x="15" y="8.5" width="2" height="1.5" rx="0.3" fill="rgba(251,191,36,0.3)"/>
-                            <rect x="20" y="9" width="2" height="3" rx="0.2" fill="rgba(6,182,212,0.1)" stroke="rgba(6,182,212,0.25)" stroke-width="0.4"/>
-                            <line x1="14" y1="3" x2="14" y2="7" stroke="rgba(148,163,184,0.25)" stroke-width="0.4"/>
-                            <circle cx="14" cy="3" r="0.7" fill="rgba(52,211,153,0.4)"/>
+                        <svg width="60" height="36" viewBox="0 0 38 22" fill="none" style="transform:scaleX(-1)">
+                            <path d="M2,18 L4,20 H34 L36,18 Z" fill="rgba(6,182,212,0.15)" stroke="rgba(6,182,212,0.45)" stroke-width="0.7"/>
+                            <rect x="6" y="13" width="24" height="5" rx="0.5" fill="rgba(6,182,212,0.1)" stroke="rgba(6,182,212,0.3)" stroke-width="0.6"/>
+                            <rect x="11" y="7" width="12" height="6" rx="0.8" fill="rgba(6,182,212,0.07)" stroke="rgba(6,182,212,0.28)" stroke-width="0.5"/>
+                            <rect class="ship-window" x="13" y="9" width="3" height="2" rx="0.3" fill="rgba(251,191,36,0.4)"/>
+                            <rect class="ship-window-2" x="18" y="9" width="3" height="2" rx="0.3" fill="rgba(6,182,212,0.2)"/>
+                            <!-- Cabin windows -->
+                            <rect x="9" y="14.5" width="2.5" height="1.5" rx="0.2" fill="rgba(6,182,212,0.18)"/>
+                            <rect x="13" y="14.5" width="2.5" height="1.5" rx="0.2" fill="rgba(251,191,36,0.15)"/>
+                            <rect x="17" y="14.5" width="2.5" height="1.5" rx="0.2" fill="rgba(6,182,212,0.18)"/>
+                            <rect x="21" y="14.5" width="2.5" height="1.5" rx="0.2" fill="rgba(6,182,212,0.18)"/>
+                            <rect x="25" y="9" width="3" height="4" rx="0.3" fill="rgba(6,182,212,0.1)" stroke="rgba(6,182,212,0.25)" stroke-width="0.4"/>
+                            <line x1="17" y1="3" x2="17" y2="7" stroke="rgba(148,163,184,0.28)" stroke-width="0.4"/>
+                            <circle cx="17" cy="3" r="0.8" fill="rgba(52,211,153,0.5)"/>
+                            <circle cx="17" cy="3" r="1.8" fill="rgba(52,211,153,0.08)"/>
                         </svg>
-                        <div class="ship-smoke absolute" style="left:8px;top:6px;width:3px;height:3px;border-radius:50%;background:rgba(148,163,184,0.25)"></div>
-                        <div class="ship-smoke-2 absolute" style="left:9px;top:7px;width:2.5px;height:2.5px;border-radius:50%;background:rgba(148,163,184,0.18)"></div>
-                        <div class="ship-wake absolute" style="right:-8px;bottom:2px;height:1.5px;width:10px;border-radius:9999px;background:linear-gradient(to right,rgba(34,211,238,0.15),transparent)"></div>
-                        <div class="absolute" style="bottom:-3px;left:10%;right:10%;height:4px;border-radius:9999px;background:rgba(34,211,238,0.1);filter:blur(3px)"></div>
+                        <div class="ship-smoke absolute" style="left:10px;top:6px;width:3.5px;height:3.5px;border-radius:50%;background:rgba(148,163,184,0.3)"></div>
+                        <div class="ship-smoke-2 absolute" style="left:11px;top:7px;width:3px;height:3px;border-radius:50%;background:rgba(148,163,184,0.2)"></div>
+                        <div class="ship-wake absolute" style="right:-10px;bottom:2px;height:1.5px;width:14px;border-radius:9999px;background:linear-gradient(to right,rgba(34,211,238,0.2),transparent)"></div>
+                        <div class="absolute" style="bottom:-4px;left:10%;right:10%;height:5px;border-radius:9999px;background:rgba(34,211,238,0.08);filter:blur(4px)"></div>
                     </div>
                 </div>
-                <!-- Waves -->
-                <svg class="wave-1 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:18px">
-                    <path d="M0,12 C100,4 200,20 300,12 C400,4 500,20 600,12 C700,4 800,20 900,12 C1000,4 1100,20 1200,12 L1200,30 L0,30Z" fill="rgba(6,182,212,0.12)"/>
-                    <path d="M0,12 C100,4 200,20 300,12 C400,4 500,20 600,12 C700,4 800,20 900,12 C1000,4 1100,20 1200,12" stroke="rgba(6,182,212,0.3)" stroke-width="1" fill="none"/>
+
+                <!-- Waves (3 layers, more visible) -->
+                <svg class="wave-1 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:22px;z-index:4;">
+                    <path d="M0,12 C100,4 200,20 300,12 C400,4 500,20 600,12 C700,4 800,20 900,12 C1000,4 1100,20 1200,12 L1200,30 L0,30Z" fill="rgba(6,182,212,0.15)"/>
+                    <path d="M0,12 C100,4 200,20 300,12 C400,4 500,20 600,12 C700,4 800,20 900,12 C1000,4 1100,20 1200,12" stroke="rgba(6,182,212,0.35)" stroke-width="0.8" fill="none"/>
                 </svg>
-                <svg class="wave-2 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:14px">
-                    <path d="M0,12 C150,20 250,4 400,12 C550,20 650,4 800,12 C950,20 1050,4 1200,12 L1200,30 L0,30Z" fill="rgba(59,130,246,0.1)"/>
+                <svg class="wave-2 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:16px;z-index:2;">
+                    <path d="M0,12 C150,20 250,4 400,12 C550,20 650,4 800,12 C950,20 1050,4 1200,12 L1200,30 L0,30Z" fill="rgba(59,130,246,0.12)"/>
+                    <path d="M0,12 C150,20 250,4 400,12 C550,20 650,4 800,12 C950,20 1050,4 1200,12" stroke="rgba(59,130,246,0.2)" stroke-width="0.5" fill="none"/>
                 </svg>
-                <svg class="wave-3 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:8px">
+                <svg class="wave-3 absolute bottom-0 w-[200%]" viewBox="0 0 1200 30" preserveAspectRatio="none" style="height:10px;z-index:1;">
                     <path d="M0,12 C200,18 300,6 500,12 C700,18 800,6 1000,12 C1100,15 1150,9 1200,12 L1200,30 L0,30Z" fill="rgba(6,182,212,0.08)"/>
                 </svg>
+
+                <!-- Ocean floor gradient overlay -->
+                <div class="absolute bottom-0 left-0 right-0 h-8" style="background:linear-gradient(to top, #0b1120, transparent);z-index:5;pointer-events:none;"></div>
             </div>
         </div>
 
@@ -221,7 +313,7 @@ function isActivePage(string $href, string $currentPage): bool {
                 <div class="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/30"><?= $section['title'] ?></div>
                 <div class="space-y-0.5">
                     <?php foreach ($section['items'] as $item):
-                        if (!empty($item['adminOnly']) && !isAdmin()) continue;
+                        if (!empty($item['adminOnly']) && !isManagerOrAdmin()) continue;
                         $active = isActivePage($item['href'], $currentPage);
                     ?>
                         <?php if (!empty($item['children'])): ?>
@@ -301,5 +393,5 @@ function isActivePage(string $href, string $currentPage): bool {
 
     <!-- Main Content -->
     <div class="flex min-w-0 flex-1 flex-col">
-        <main class="min-w-0 flex-1 px-0 pb-4 pt-16 sm:px-4 lg:px-6 lg:pt-6">
+        <main class="min-w-0 flex-1 px-0 pb-4 pt-16 sm:px-4 lg:px-6 lg:pb-4 lg:pt-6">
             <div class="w-full">

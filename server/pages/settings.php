@@ -7,7 +7,7 @@ $pageTitle = 'Ayarlar';
 $GLOBALS['currentPage'] = $GLOBALS['currentPage'] ?? '/settings';
 require_once __DIR__ . '/../includes/header.php';
 
-if (!isAdmin()) {
+if (!isManagerOrAdmin()) {
     echo '<div class="flex flex-col items-center justify-center py-24"><h1 class="text-2xl font-bold text-white/80 mb-4">Yetkisiz Erişim</h1><p class="text-white/50 mb-8">Bu sayfaya erişim yetkiniz yok</p><a href="/dashboard" class="btn btn-primary">Dashboard\'a Dön</a></div>';
     require_once __DIR__ . '/../includes/footer.php';
     exit;
@@ -53,7 +53,8 @@ $currentUserId = $_SESSION['user_id'] ?? '';
                 </div>
             </div>
 
-            <!-- Data Management Section -->
+            <!-- Data Management Section (only admin) -->
+            <?php if (isAdmin()): ?>
             <div class="mt-6 rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.03] to-transparent">
                 <div class="relative flex items-center justify-between px-5 py-4">
                     <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-emerald-500/30 to-transparent"></div>
@@ -94,6 +95,7 @@ $currentUserId = $_SESSION['user_id'] ?? '';
                     </div>
                 </div>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -131,12 +133,15 @@ $currentUserId = $_SESSION['user_id'] ?? '';
             </div>
             <div>
                 <label class="mb-2 block text-xs font-semibold text-white/70">Rol *</label>
-                <div class="flex gap-3">
+                <div class="flex gap-2">
                     <button type="button" onclick="setRole('user')" id="roleUserBtn" class="flex flex-1 items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all border-blue-500/50 bg-blue-500/10 text-blue-400">
                         <i data-lucide="user" class="h-4 w-4"></i>Kullanıcı
                     </button>
+                    <button type="button" onclick="setRole('manager')" id="roleManagerBtn" class="flex flex-1 items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all border-white/10 bg-white/5 text-white/60 hover:bg-white/10">
+                        <i data-lucide="shield" class="h-4 w-4"></i>Yönetici
+                    </button>
                     <button type="button" onclick="setRole('admin')" id="roleAdminBtn" class="flex flex-1 items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all border-white/10 bg-white/5 text-white/60 hover:bg-white/10">
-                        <i data-lucide="shield-check" class="h-4 w-4"></i>Yönetici
+                        <i data-lucide="shield-check" class="h-4 w-4"></i>Admin
                     </button>
                 </div>
             </div>
@@ -171,11 +176,11 @@ function renderUsers() {
     }
     container.innerHTML = users.map(u => {
         const isCurrent = u.id === CURRENT_USER_ID;
-        const isAdmin = u.role === 'admin';
         const borderCls = isCurrent ? 'border-blue-500/30 bg-blue-500/5' : 'border-white/10 bg-white/[0.02] hover:bg-white/[0.04]';
-        const iconBg = isAdmin ? 'from-amber-500/25 to-amber-600/10' : 'from-slate-500/25 to-slate-600/10';
-        const iconName = isAdmin ? 'shield-check' : 'user';
-        const iconColor = isAdmin ? 'text-amber-400' : 'text-slate-400';
+        const iconBg = getRoleIconBg(u.role);
+        const iconName = getRoleIcon(u.role);
+        const iconColor = getRoleColor(u.role);
+        const roleLabel = getRoleLabel(u.role);
         return `<div class="group flex items-center gap-4 rounded-xl border p-4 transition-all ${borderCls}">
             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ${iconBg}">
                 <i data-lucide="${iconName}" class="h-6 w-6 ${iconColor}"></i>
@@ -188,9 +193,9 @@ function renderUsers() {
                 <div class="flex items-center gap-3 text-sm text-white/50">
                     <span>@${escapeHtml(u.username)}</span>
                     <span class="text-white/20">•</span>
-                    <span class="flex items-center gap-1 ${isAdmin ? 'text-amber-400/70' : 'text-white/50'}">
-                        ${isAdmin ? '<i data-lucide="shield" class="h-3 w-3"></i>' : ''}
-                        ${isAdmin ? 'Yönetici' : 'Kullanıcı'}
+                    <span class="flex items-center gap-1 ${iconColor}">
+                        <i data-lucide="${iconName}" class="h-3 w-3"></i>
+                        ${roleLabel}
                     </span>
                 </div>
             </div>
@@ -234,10 +239,31 @@ function openEditModal(id) {
 
 function setRole(role) { formRole = role; updateRoleButtons(); }
 function updateRoleButtons() {
-    const userBtn = document.getElementById('roleUserBtn');
-    const adminBtn = document.getElementById('roleAdminBtn');
-    userBtn.className = `flex flex-1 items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all ${formRole==='user' ? 'border-blue-500/50 bg-blue-500/10 text-blue-400' : 'border-white/10 bg-white/5 text-white/60 hover:bg-white/10'}`;
-    adminBtn.className = `flex flex-1 items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all ${formRole==='admin' ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : 'border-white/10 bg-white/5 text-white/60 hover:bg-white/10'}`;
+    const base = 'flex flex-1 items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium transition-all';
+    const off = 'border-white/10 bg-white/5 text-white/60 hover:bg-white/10';
+    document.getElementById('roleUserBtn').className = `${base} ${formRole==='user' ? 'border-blue-500/50 bg-blue-500/10 text-blue-400' : off}`;
+    document.getElementById('roleManagerBtn').className = `${base} ${formRole==='manager' ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' : off}`;
+    document.getElementById('roleAdminBtn').className = `${base} ${formRole==='admin' ? 'border-amber-500/50 bg-amber-500/10 text-amber-400' : off}`;
+}
+function getRoleLabel(role) {
+    if (role === 'admin') return 'Admin';
+    if (role === 'manager') return 'Yönetici';
+    return 'Kullanıcı';
+}
+function getRoleIcon(role) {
+    if (role === 'admin') return 'shield-check';
+    if (role === 'manager') return 'shield';
+    return 'user';
+}
+function getRoleColor(role) {
+    if (role === 'admin') return 'text-amber-400';
+    if (role === 'manager') return 'text-emerald-400';
+    return 'text-white/50';
+}
+function getRoleIconBg(role) {
+    if (role === 'admin') return 'from-amber-500/25 to-amber-600/10';
+    if (role === 'manager') return 'from-emerald-500/25 to-emerald-600/10';
+    return 'from-slate-500/25 to-slate-600/10';
 }
 
 function togglePassword() {

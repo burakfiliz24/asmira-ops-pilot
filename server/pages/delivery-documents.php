@@ -1,45 +1,44 @@
 <?php
 /**
- * Asmira Ops - Şoför Evrakları
- * Orijinal React sayfasının birebir PHP karşılığı
+ * Asmira Ops - Teslimatçı Evrakları
  */
-$pageTitle = 'Asmira Şoförler';
-$GLOBALS['currentPage'] = $GLOBALS['currentPage'] ?? '/driver-documents/asmira';
+$pageTitle = 'Teslimatçı Evrakları';
+$GLOBALS['currentPage'] = $GLOBALS['currentPage'] ?? '/delivery-documents';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="flex min-h-[calc(100vh-80px)] w-full max-w-none flex-col px-2 py-2 sm:px-4">
     <div class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] text-white shadow-[0_0_40px_rgba(0,0,0,0.3)]">
         <!-- Header -->
-        <div class="relative flex flex-none flex-wrap items-center justify-between gap-3 bg-gradient-to-b from-purple-500/5 to-transparent px-6 py-4">
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-purple-500/60 via-purple-400/30 to-transparent"></div>
+        <div class="relative flex flex-none flex-wrap items-center justify-between gap-3 bg-gradient-to-b from-teal-500/5 to-transparent px-6 py-4">
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-teal-500/60 via-teal-400/30 to-transparent"></div>
             <div>
-                <div class="text-sm font-light tracking-[0.2em] text-slate-400">ŞOFÖR EVRAKLARI</div>
-                <div class="text-3xl font-black tracking-tight">Asmira Şoförler</div>
+                <div class="text-sm font-light tracking-[0.2em] text-slate-400">TESLİMATÇI EVRAKLARI</div>
+                <div class="text-3xl font-black tracking-tight">Teslimatçılar</div>
             </div>
-            <button type="button" onclick="openNewDriverModal()" class="inline-flex h-10 items-center gap-2 rounded-lg bg-gradient-to-br from-purple-600 to-purple-700 px-5 text-[13px] font-semibold text-white shadow-[0_2px_10px_rgba(147,51,234,0.25)] transition-all hover:from-purple-500 hover:to-purple-600">
+            <button type="button" onclick="openNewDelivererModal()" class="inline-flex h-10 items-center gap-2 rounded-lg bg-gradient-to-br from-teal-600 to-teal-700 px-5 text-[13px] font-semibold text-white shadow-[0_2px_10px_rgba(20,184,166,0.25)] transition-all hover:from-teal-500 hover:to-teal-600">
                 <i data-lucide="plus" class="h-4 w-4"></i>
-                Yeni Şoför Ekle
+                Yeni Teslimatçı Ekle
             </button>
         </div>
 
         <!-- Search & Stats -->
         <div class="relative flex flex-none items-center gap-3 px-6 py-3">
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-purple-500/40 via-purple-400/20 to-transparent"></div>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-teal-500/40 via-teal-400/20 to-transparent"></div>
             <div class="relative flex-1">
                 <i data-lucide="search" class="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400"></i>
-                <input type="text" id="searchInput" oninput="renderGrid()" placeholder="Şoför adı, TC veya telefon ara..." class="h-11 w-full rounded-xl border border-cyan-500/30 bg-slate-900/80 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all">
+                <input type="text" id="searchInput" oninput="renderGrid()" placeholder="Teslimatçı adı, TC veya telefon ara..." class="h-11 w-full rounded-xl border border-cyan-500/30 bg-slate-900/80 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/40 focus:border-cyan-400/60 focus:ring-2 focus:ring-cyan-400/20 transition-all">
             </div>
             <div class="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 backdrop-blur-md">
-                <div class="h-2 w-2 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(147,51,234,0.6)]"></div>
-                <span class="text-xs font-medium text-white/70">Toplam Şoför</span>
+                <div class="h-2 w-2 rounded-full bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]"></div>
+                <span class="text-xs font-medium text-white/70">Toplam</span>
                 <span class="text-sm font-bold text-white" id="totalCount">0</span>
             </div>
         </div>
 
-        <!-- Driver Cards -->
+        <!-- Cards -->
         <div class="flex-1 overflow-y-auto p-6">
-            <div id="driverGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div id="delivererGrid" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 <div class="col-span-full flex items-center justify-center py-12"><div class="spinner"></div></div>
             </div>
         </div>
@@ -51,7 +50,7 @@ require_once __DIR__ . '/../includes/header.php';
     <button type="button" class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePanel()"></button>
     <div class="doc-side-panel relative z-10 flex h-full w-full max-w-md flex-col overflow-hidden bg-[#0B1220] text-white shadow-xl">
         <div class="relative flex items-center justify-between px-5 py-4">
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-purple-500/60 via-purple-400/30 to-transparent"></div>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-teal-500/60 via-teal-400/30 to-transparent"></div>
             <div>
                 <div class="text-sm font-light tracking-[0.2em] text-slate-400">EVRAK YÖNETİMİ</div>
                 <div class="text-lg font-bold" id="panelTitle"></div>
@@ -67,57 +66,57 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<!-- Edit Driver Modal -->
-<div id="editDriverModal" class="hidden modal-overlay">
-    <div class="modal-backdrop" onclick="closeModal('editDriverModal')"></div>
+<!-- Edit Deliverer Modal -->
+<div id="editDelivererModal" class="hidden modal-overlay">
+    <div class="modal-backdrop" onclick="closeModal('editDelivererModal')"></div>
     <div class="relative z-10 mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#0B1220] text-white shadow-xl">
         <div class="relative flex items-center justify-between px-5 py-4">
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-purple-500/60 via-purple-400/30 to-transparent"></div>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-teal-500/60 via-teal-400/30 to-transparent"></div>
             <div>
                 <div class="text-sm font-light tracking-[0.2em] text-slate-400">DÜZENLE</div>
-                <div class="text-lg font-bold">Şoför Bilgileri</div>
+                <div class="text-lg font-bold">Teslimatçı Bilgileri</div>
             </div>
-            <button type="button" onclick="closeModal('editDriverModal')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10"><i data-lucide="x" class="h-4 w-4"></i></button>
+            <button type="button" onclick="closeModal('editDelivererModal')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10"><i data-lucide="x" class="h-4 w-4"></i></button>
         </div>
         <div class="space-y-4 px-5 py-5">
-            <input type="hidden" id="editDriverId">
-            <div><label class="mb-2 block text-xs font-semibold text-white/70">Ad Soyad *</label><input type="text" id="editDriverName" placeholder="Örn: Ahmet Yılmaz" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-purple-500/50"></div>
-            <div><label class="mb-2 block text-xs font-semibold text-white/70">TC Kimlik No *</label><input type="text" id="editDriverTcNo" placeholder="Örn: 12345678901" maxlength="11" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-purple-500/50"></div>
-            <div><label class="mb-2 block text-xs font-semibold text-white/70">Telefon</label><input type="text" id="editDriverPhone" placeholder="Örn: 0532 123 45 67" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-purple-500/50"></div>
+            <input type="hidden" id="editDelivererId">
+            <div><label class="mb-2 block text-xs font-semibold text-white/70">Ad Soyad *</label><input type="text" id="editDelivererName" placeholder="Örn: Ali Veli" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-teal-500/50"></div>
+            <div><label class="mb-2 block text-xs font-semibold text-white/70">TC Kimlik No</label><input type="text" id="editDelivererTcNo" placeholder="Örn: 12345678901" maxlength="11" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-teal-500/50"></div>
+            <div><label class="mb-2 block text-xs font-semibold text-white/70">Telefon</label><input type="text" id="editDelivererPhone" placeholder="Örn: 0532 123 45 67" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-teal-500/50"></div>
         </div>
         <div class="flex items-center justify-end gap-2 border-t border-white/10 px-5 py-4">
-            <button type="button" onclick="closeModal('editDriverModal')" class="rounded-lg px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10">Vazgeç</button>
-            <button type="button" onclick="saveEditDriver()" class="rounded-lg bg-gradient-to-br from-purple-600 to-purple-700 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(147,51,234,0.25)] transition-all hover:from-purple-500 hover:to-purple-600">Güncelle</button>
+            <button type="button" onclick="closeModal('editDelivererModal')" class="rounded-lg px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10">Vazgeç</button>
+            <button type="button" onclick="saveEditDeliverer()" class="rounded-lg bg-gradient-to-br from-teal-600 to-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(20,184,166,0.25)] transition-all hover:from-teal-500 hover:to-teal-600">Güncelle</button>
         </div>
     </div>
 </div>
 
-<!-- New Driver Modal -->
-<div id="newDriverModal" class="hidden modal-overlay">
-    <div class="modal-backdrop" onclick="closeModal('newDriverModal')"></div>
+<!-- New Deliverer Modal -->
+<div id="newDelivererModal" class="hidden modal-overlay">
+    <div class="modal-backdrop" onclick="closeModal('newDelivererModal')"></div>
     <div class="relative z-10 mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#0B1220] text-white shadow-xl">
         <div class="relative flex items-center justify-between px-5 py-4">
-            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-purple-500/60 via-purple-400/30 to-transparent"></div>
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-teal-500/60 via-teal-400/30 to-transparent"></div>
             <div>
                 <div class="text-sm font-light tracking-[0.2em] text-slate-400">YENİ KAYIT</div>
-                <div class="text-lg font-bold">Şoför Tanımla</div>
+                <div class="text-lg font-bold">Teslimatçı Tanımla</div>
             </div>
-            <button type="button" onclick="closeModal('newDriverModal')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10"><i data-lucide="x" class="h-4 w-4"></i></button>
+            <button type="button" onclick="closeModal('newDelivererModal')" class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/10 bg-white/5 hover:bg-white/10"><i data-lucide="x" class="h-4 w-4"></i></button>
         </div>
         <div class="space-y-4 px-5 py-5">
-            <div><label class="mb-2 block text-xs font-semibold text-white/70">Ad Soyad *</label><input type="text" id="newDriverName" placeholder="Örn: Ahmet Yılmaz" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-purple-500/50"></div>
-            <div><label class="mb-2 block text-xs font-semibold text-white/70">TC Kimlik No *</label><input type="text" id="newDriverTcNo" placeholder="Örn: 12345678901" maxlength="11" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-purple-500/50"></div>
-            <div><label class="mb-2 block text-xs font-semibold text-white/70">Telefon</label><input type="text" id="newDriverPhone" placeholder="Örn: 0532 123 45 67" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-purple-500/50"></div>
+            <div><label class="mb-2 block text-xs font-semibold text-white/70">Ad Soyad *</label><input type="text" id="newDelivererName" placeholder="Örn: Ali Veli" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-teal-500/50"></div>
+            <div><label class="mb-2 block text-xs font-semibold text-white/70">TC Kimlik No</label><input type="text" id="newDelivererTcNo" placeholder="Örn: 12345678901" maxlength="11" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-teal-500/50"></div>
+            <div><label class="mb-2 block text-xs font-semibold text-white/70">Telefon</label><input type="text" id="newDelivererPhone" placeholder="Örn: 0532 123 45 67" class="h-11 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-teal-500/50"></div>
         </div>
         <div class="flex items-center justify-end gap-2 border-t border-white/10 px-5 py-4">
-            <button type="button" onclick="closeModal('newDriverModal')" class="rounded-lg px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10">Vazgeç</button>
-            <button type="button" onclick="saveNewDriver()" class="rounded-lg bg-gradient-to-br from-purple-600 to-purple-700 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(147,51,234,0.25)] transition-all hover:from-purple-500 hover:to-purple-600">Kaydet</button>
+            <button type="button" onclick="closeModal('newDelivererModal')" class="rounded-lg px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/10">Vazgeç</button>
+            <button type="button" onclick="saveNewDeliverer()" class="rounded-lg bg-gradient-to-br from-teal-600 to-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_2px_10px_rgba(20,184,166,0.25)] transition-all hover:from-teal-500 hover:to-teal-600">Kaydet</button>
         </div>
     </div>
 </div>
 
 <script>
-const DEFAULT_DRIVER_DOCS = [
+const DEFAULT_DELIVERER_DOCS = [
     { type: 'kimlik', label: 'Kimlik' },
     { type: 'ehliyet', label: 'Ehliyet' },
     { type: 'src5', label: 'SRC 5' },
@@ -131,26 +130,25 @@ const DEFAULT_DRIVER_DOCS = [
     { type: 'yanginEgitimSertifikasi', label: 'Yangın Eğitim Sertifikası' },
 ];
 
-function ensureDriverDocs(driver) {
-    const existing = driver.documents || [];
-    // Her varsayılan evrak tipini kontrol et — eksik olanları ekle
-    driver.documents = DEFAULT_DRIVER_DOCS.map(def => {
-        const found = existing.find(d => d.type === def.type);
+function ensureDelivererDocs(d) {
+    const existing = d.documents || [];
+    d.documents = DEFAULT_DELIVERER_DOCS.map(def => {
+        const found = existing.find(x => x.type === def.type);
         return found ? { ...def, ...found } : { ...def, fileName: null, filePath: null, expiryDate: null };
     });
-    return driver;
+    return d;
 }
 
-let drivers = [];
-let panelDriverId = null;
+let deliverers = [];
+let panelDelivererId = null;
 let pendingChanges = { uploads: [], expiryDates: [], deletions: [] };
 
 document.addEventListener('DOMContentLoaded', loadData);
 
 async function loadData() {
     try {
-        drivers = (await apiRequest('/api/drivers?category=asmira')).map(ensureDriverDocs);
-        document.getElementById('totalCount').textContent = drivers.length;
+        deliverers = (await apiRequest('/api/deliverers')).map(ensureDelivererDocs);
+        document.getElementById('totalCount').textContent = deliverers.length;
         renderGrid();
     } catch (e) { showToast('Veriler yüklenemedi: ' + e.message, 'error'); }
 }
@@ -158,17 +156,17 @@ async function loadData() {
 function countUploaded(docs) { return docs.filter(d => d.fileName).length; }
 function countExpired(docs) { const now = new Date(); return docs.filter(d => d.expiryDate && new Date(d.expiryDate) < now).length; }
 
-function getFilteredDrivers() {
+function getFilteredDeliverers() {
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-    if (!q) return drivers;
-    return drivers.filter(d => d.name.toLowerCase().includes(q) || (d.tcNo||'').includes(q) || (d.phone||'').includes(q));
+    if (!q) return deliverers;
+    return deliverers.filter(d => d.name.toLowerCase().includes(q) || (d.tcNo||'').includes(q) || (d.phone||'').includes(q));
 }
 
 function renderGrid() {
-    const filtered = getFilteredDrivers();
-    const grid = document.getElementById('driverGrid');
+    const filtered = getFilteredDeliverers();
+    const grid = document.getElementById('delivererGrid');
     if (filtered.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-12 text-white/40"><i data-lucide="user-check" class="h-12 w-12 mx-auto mb-3 opacity-30"></i><p>Şoför bulunamadı</p></div>';
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-white/40"><i data-lucide="package" class="h-12 w-12 mx-auto mb-3 opacity-30"></i><p>Teslimatçı bulunamadı</p></div>';
         lucide.createIcons({nodes:[grid]}); return;
     }
     grid.innerHTML = filtered.map(d => {
@@ -179,8 +177,8 @@ function renderGrid() {
         const isComplete = uploaded === total && total > 0;
         const hasExpired = expiredCount > 0;
         const progress = total > 0 ? (uploaded / total) * 100 : 0;
-        const borderCls = hasExpired ? 'border-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.15)]' : isComplete ? 'border-emerald-500/40 shadow-[0_0_25px_rgba(52,211,153,0.15)]' : 'border-purple-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.2)]';
-        const iconCls = hasExpired ? 'from-red-500/25 to-red-600/10 text-red-400' : isComplete ? 'from-emerald-500/25 to-emerald-600/10 text-emerald-400' : 'from-purple-500/25 to-purple-600/10 text-purple-400';
+        const borderCls = hasExpired ? 'border-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.15)]' : isComplete ? 'border-emerald-500/40 shadow-[0_0_25px_rgba(52,211,153,0.15)]' : 'border-teal-500/20 shadow-[0_4px_20px_rgba(0,0,0,0.2)]';
+        const iconCls = hasExpired ? 'from-red-500/25 to-red-600/10 text-red-400' : isComplete ? 'from-emerald-500/25 to-emerald-600/10 text-emerald-400' : 'from-teal-500/25 to-teal-600/10 text-teal-400';
         const progCls = isComplete ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'bg-gradient-to-r from-amber-500 to-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.4)]';
         let statusBadge = '';
         if (hasExpired) { statusBadge = `<div class="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-1 text-[11px] font-semibold text-red-400"><i data-lucide="alert-octagon" class="h-3 w-3"></i>${expiredCount} Evrak Süresi Geçmiş</div>`; }
@@ -188,10 +186,10 @@ function renderGrid() {
         else { statusBadge = `<div class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-semibold text-amber-400"><i data-lucide="alert-triangle" class="h-3 w-3"></i>${total - uploaded} Evrak Eksik</div>`; }
 
         return `<div class="group relative flex flex-col rounded-xl border bg-gradient-to-br from-white/[0.04] to-transparent p-4 backdrop-blur-sm transition-all hover:bg-white/[0.06] ${borderCls}">
-            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-purple-500/10 blur-2xl transition-opacity group-hover:opacity-100 opacity-0"></div>
-            <button type="button" onclick="deleteDriver('${d.id}','${escapeHtml(d.name)}')" class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md border border-red-500/30 bg-red-500/10 text-red-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-500/20" title="Sil"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i></button>
+            <div class="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-teal-500/10 blur-2xl transition-opacity group-hover:opacity-100 opacity-0"></div>
+            <button type="button" onclick="deleteDeliverer('${d.id}','${escapeHtml(d.name)}')" class="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-md border border-red-500/30 bg-red-500/10 text-red-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-500/20" title="Sil"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i></button>
             <div class="mb-4 flex items-start gap-3">
-                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ${iconCls}"><i data-lucide="user-check" class="h-5 w-5"></i></div>
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] ${iconCls}"><i data-lucide="package" class="h-5 w-5"></i></div>
                 <div class="min-w-0 flex-1">
                     <div class="truncate text-[15px] font-bold tracking-tight">${escapeHtml(d.name)}</div>
                     <div class="truncate text-xs text-white/50">${escapeHtml(d.tcNo||'')}</div>
@@ -210,7 +208,7 @@ function renderGrid() {
             <div class="mb-4">${statusBadge}</div>
             <div class="mt-auto flex items-center gap-2 border-t border-white/10 pt-3">
                 <button type="button" onclick="openPanel('${d.id}')" class="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-white/10 py-2 text-xs font-medium text-white transition hover:bg-white/15"><i data-lucide="folder-open" class="h-3.5 w-3.5"></i>Evraklar</button>
-                <button type="button" onclick="editDriver('${d.id}')" class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition hover:bg-white/10 hover:text-white" title="Düzenle"><i data-lucide="edit-3" class="h-3.5 w-3.5"></i></button>
+                <button type="button" onclick="editDeliverer('${d.id}')" class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition hover:bg-white/10 hover:text-white" title="Düzenle"><i data-lucide="edit-3" class="h-3.5 w-3.5"></i></button>
                 <button type="button" onclick="downloadAll('${d.id}')" class="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition hover:bg-white/10 hover:text-white" title="Tümünü İndir"><i data-lucide="download" class="h-3.5 w-3.5"></i></button>
             </div>
         </div>`;
@@ -219,8 +217,8 @@ function renderGrid() {
 }
 
 // ======= PANEL =======
-function openPanel(driverId) {
-    panelDriverId = driverId;
+function openPanel(delivererId) {
+    panelDelivererId = delivererId;
     pendingChanges = { uploads: [], expiryDates: [], deletions: [] };
     renderPanel();
     document.getElementById('docPanel').classList.remove('hidden');
@@ -229,12 +227,12 @@ function openPanel(driverId) {
 function closePanel() {
     if (hasPendingChanges() && !confirm('Kaydedilmemiş değişiklikler var. Çıkmak istediğinize emin misiniz?')) return;
     document.getElementById('docPanel').classList.add('hidden');
-    panelDriverId = null;
+    panelDelivererId = null;
 }
 function hasPendingChanges() { return pendingChanges.uploads.length > 0 || pendingChanges.expiryDates.length > 0 || pendingChanges.deletions.length > 0; }
 
 function renderPanel() {
-    const d = drivers.find(x => x.id === panelDriverId);
+    const d = deliverers.find(x => x.id === panelDelivererId);
     if (!d) return;
     document.getElementById('panelTitle').textContent = d.name;
     const docs = d.documents || [];
@@ -261,7 +259,7 @@ function renderPanel() {
         } else {
             fs = `<div class="mt-3"><label class="flex items-center justify-center gap-2 rounded-md border border-dashed border-white/20 bg-white/5 px-4 py-3 text-sm hover:bg-white/10 cursor-pointer text-white/50 hover:text-white/70 transition"><i data-lucide="upload" class="h-4 w-4"></i>Dosya sürükleyin veya tıklayın<input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.tiff,.doc,.docx" onchange="panelUpload(this,'${doc.type}')"></label></div>`;
         }
-        return `<div class="rounded-lg border p-4 ${cls} transition-all" ondragover="event.preventDefault();this.classList.add('ring-2','ring-purple-400','bg-purple-500/10')" ondragenter="event.preventDefault()" ondragleave="this.classList.remove('ring-2','ring-purple-400','bg-purple-500/10')" ondrop="handleDocDrop(event,'${doc.type}')">
+        return `<div class="rounded-lg border p-4 ${cls} transition-all" ondragover="event.preventDefault();this.classList.add('ring-2','ring-teal-400','bg-teal-500/10')" ondragenter="event.preventDefault()" ondragleave="this.classList.remove('ring-2','ring-teal-400','bg-teal-500/10')" ondrop="handleDocDrop(event,'${doc.type}')">
             <div class="flex items-center gap-2">
                 ${fileName ? '<i data-lucide="check-circle" class="h-4 w-4 text-emerald-400"></i>' : '<div class="h-4 w-4 rounded-full border-2 border-white/30"></div>'}
                 <span class="font-medium">${escapeHtml(doc.label || doc.type)}</span>
@@ -271,7 +269,7 @@ function renderPanel() {
             ${fs}
             <div class="mt-3 flex items-center gap-2">
                 <label class="text-xs text-white/50">Son Geçerlilik:</label>
-                <input type="date" value="${expiryDate||''}" onchange="panelExpiryChange('${doc.type}',this.value)" style="color-scheme:dark" class="h-8 rounded-md border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus:border-purple-500/50">
+                <input type="date" value="${expiryDate||''}" onchange="panelExpiryChange('${doc.type}',this.value)" style="color-scheme:dark" class="h-8 rounded-md border border-white/10 bg-white/5 px-2 text-xs text-white outline-none focus:border-teal-500/50">
                 ${expiryDate ? `<button type="button" onclick="panelExpiryChange('${doc.type}',null)" class="text-xs text-white/40 hover:text-white/60">✕</button>` : ''}
             </div>
         </div>`;
@@ -296,7 +294,7 @@ function panelUpload(input, docType) {
 }
 function handleDocDrop(e, docType) {
     e.preventDefault(); e.stopPropagation();
-    e.currentTarget.classList.remove('ring-2','ring-purple-400','bg-purple-500/10');
+    e.currentTarget.classList.remove('ring-2','ring-teal-400','bg-teal-500/10');
     const file = e.dataTransfer.files[0]; if (!file) return;
     _addUploadFile(file, docType);
 }
@@ -319,36 +317,24 @@ function panelDeleteDoc(docType) {
 }
 
 async function savePanelChanges() {
-    if (!hasPendingChanges() || !panelDriverId) return;
-    const d = drivers.find(x => x.id === panelDriverId);
+    if (!hasPendingChanges() || !panelDelivererId) return;
+    const d = deliverers.find(x => x.id === panelDelivererId);
     if (!d) return;
     try {
         for (const del of pendingChanges.deletions) {
-            try { await apiRequest('/api/documents/update', { method: 'DELETE', body: JSON.stringify({ ownerId: panelDriverId, ownerType: 'driver', docType: del.docType }) }); } catch(e) {}
+            try { await apiRequest('/api/documents/update', { method: 'DELETE', body: JSON.stringify({ ownerId: panelDelivererId, ownerType: 'deliverer', docType: del.docType }) }); } catch(e) {}
         }
         for (const up of pendingChanges.uploads) {
-            try { await uploadFile(up.file, panelDriverId, 'driver', up.docType); } catch(e) {}
+            try { await uploadFile(up.file, panelDelivererId, 'deliverer', up.docType); } catch(e) {}
         }
         for (const exp of pendingChanges.expiryDates) {
-            try { await apiRequest('/api/documents/update', { method: 'PUT', body: JSON.stringify({ ownerId: panelDriverId, ownerType: 'driver', docType: exp.docType, expiryDate: exp.date }) }); } catch(e) {}
+            try { await apiRequest('/api/documents/update', { method: 'PUT', body: JSON.stringify({ ownerId: panelDelivererId, ownerType: 'deliverer', docType: exp.docType, expiryDate: exp.date }) }); } catch(e) {}
         }
-        // Lokal verilere uygula
         const docs = d.documents || [];
-        for (const del of pendingChanges.deletions) {
-            const doc = docs.find(dd => dd.type === del.docType);
-            if (doc) { doc.fileName = null; doc.filePath = null; doc.fileUrl = null; }
-        }
-        for (const up of pendingChanges.uploads) {
-            const doc = docs.find(dd => dd.type === up.docType);
-            if (doc) { doc.fileName = up.fileName; doc.fileUrl = up.fileUrl; }
-        }
-        for (const exp of pendingChanges.expiryDates) {
-            const doc = docs.find(dd => dd.type === exp.docType);
-            if (doc) { doc.expiryDate = exp.date; }
-        }
+        for (const del of pendingChanges.deletions) { const doc = docs.find(dd => dd.type === del.docType); if (doc) { doc.fileName = null; doc.filePath = null; doc.fileUrl = null; } }
+        for (const up of pendingChanges.uploads) { const doc = docs.find(dd => dd.type === up.docType); if (doc) { doc.fileName = up.fileName; doc.fileUrl = up.fileUrl; } }
+        for (const exp of pendingChanges.expiryDates) { const doc = docs.find(dd => dd.type === exp.docType); if (doc) { doc.expiryDate = exp.date; } }
         pendingChanges = { uploads: [], expiryDates: [], deletions: [] };
-        // localStorage'a kaydet - Dashboard ve Evrak Takibi buradan okuyacak
-        saveDocStore('drivers', drivers);
         showToast('Değişiklikler kaydedildi');
         renderGrid();
         renderPanel();
@@ -356,81 +342,76 @@ async function savePanelChanges() {
 }
 
 // ======= CRUD =======
-function openNewDriverModal() {
-    document.getElementById('newDriverName').value = '';
-    document.getElementById('newDriverTcNo').value = '';
-    document.getElementById('newDriverPhone').value = '';
-    openModal('newDriverModal'); lucide.createIcons();
+function openNewDelivererModal() {
+    document.getElementById('newDelivererName').value = '';
+    document.getElementById('newDelivererTcNo').value = '';
+    document.getElementById('newDelivererPhone').value = '';
+    openModal('newDelivererModal'); lucide.createIcons();
 }
 
-async function saveNewDriver() {
-    const name = document.getElementById('newDriverName').value.trim();
-    const tcNo = document.getElementById('newDriverTcNo').value.trim();
-    const phone = document.getElementById('newDriverPhone').value.trim();
-    if (!name || !tcNo) { showToast('Lütfen ad ve TC kimlik numarasını girin', 'error'); return; }
+async function saveNewDeliverer() {
+    const name = document.getElementById('newDelivererName').value.trim();
+    const tcNo = document.getElementById('newDelivererTcNo').value.trim();
+    const phone = document.getElementById('newDelivererPhone').value.trim();
+    if (!name) { showToast('Lütfen teslimatçı adını girin', 'error'); return; }
     try {
-        const res = await apiRequest('/api/drivers', { method: 'POST', body: JSON.stringify({ name, tcNo, phone, category: 'asmira' }) });
-        drivers.push(ensureDriverDocs({ id: res.id || ('drv_local_' + Date.now()), name, tcNo, phone, documents: res.documents || [] }));
-        document.getElementById('totalCount').textContent = drivers.length;
-        saveDocStore('drivers', drivers);
+        const res = await apiRequest('/api/deliverers', { method: 'POST', body: JSON.stringify({ name, tcNo, phone }) });
+        deliverers.push(ensureDelivererDocs({ id: res.id || ('dlv_local_' + Date.now()), name, tcNo, phone, documents: res.documents || [] }));
+        document.getElementById('totalCount').textContent = deliverers.length;
         renderGrid();
-        closeModal('newDriverModal');
-        showToast('Şoför eklendi');
+        closeModal('newDelivererModal');
+        showToast('Teslimatçı eklendi');
     } catch (e) { showToast('Kayıt hatası: ' + e.message, 'error'); }
 }
 
-async function deleteDriver(id, name) {
+async function deleteDeliverer(id, name) {
     if (!confirmAction(`"${name}" kaydını silmek istediğinize emin misiniz?`)) return;
     try {
-        await apiRequest('/api/drivers', { method: 'DELETE', body: JSON.stringify({ id }) });
+        await apiRequest('/api/deliverers', { method: 'DELETE', body: JSON.stringify({ id }) });
     } catch (e) { console.warn('API delete hatası (devam ediliyor):', e); }
-    // Lokal arrayden hemen kaldır — API durumu ne olursa olsun
-    drivers = drivers.filter(d => d.id !== id);
-    saveDocStore('drivers', drivers);
-    document.getElementById('totalCount').textContent = drivers.length;
-    if (panelDriverId === id) { panelDriverId = null; document.getElementById('detailPanel')?.classList.add('hidden'); }
+    deliverers = deliverers.filter(d => d.id !== id);
+    document.getElementById('totalCount').textContent = deliverers.length;
+    if (panelDelivererId === id) { panelDelivererId = null; document.getElementById('docPanel')?.classList.add('hidden'); }
     renderGrid();
-    showToast('Şoför silindi');
+    showToast('Teslimatçı silindi');
 }
 
-function editDriver(id) {
-    const d = drivers.find(x => x.id === id);
+function editDeliverer(id) {
+    const d = deliverers.find(x => x.id === id);
     if (!d) return;
-    document.getElementById('editDriverId').value = d.id;
-    document.getElementById('editDriverName').value = d.name || '';
-    document.getElementById('editDriverTcNo').value = d.tcNo || '';
-    document.getElementById('editDriverPhone').value = d.phone || '';
-    openModal('editDriverModal');
+    document.getElementById('editDelivererId').value = d.id;
+    document.getElementById('editDelivererName').value = d.name || '';
+    document.getElementById('editDelivererTcNo').value = d.tcNo || '';
+    document.getElementById('editDelivererPhone').value = d.phone || '';
+    openModal('editDelivererModal');
     lucide.createIcons();
 }
 
-async function saveEditDriver() {
-    const id = document.getElementById('editDriverId').value;
-    const name = document.getElementById('editDriverName').value.trim();
-    const tcNo = document.getElementById('editDriverTcNo').value.trim();
-    const phone = document.getElementById('editDriverPhone').value.trim();
-    if (!name || !tcNo) { showToast('Lütfen ad ve TC kimlik numarasını girin', 'error'); return; }
-    const d = drivers.find(x => x.id === id);
+async function saveEditDeliverer() {
+    const id = document.getElementById('editDelivererId').value;
+    const name = document.getElementById('editDelivererName').value.trim();
+    const tcNo = document.getElementById('editDelivererTcNo').value.trim();
+    const phone = document.getElementById('editDelivererPhone').value.trim();
+    if (!name) { showToast('Lütfen teslimatçı adını girin', 'error'); return; }
+    const d = deliverers.find(x => x.id === id);
     if (!d) return;
     try {
-        await apiRequest('/api/drivers', { method: 'PUT', body: JSON.stringify({ id, name, tcNo, phone }) });
+        await apiRequest('/api/deliverers', { method: 'PUT', body: JSON.stringify({ id, name, tcNo, phone }) });
     } catch (e) { console.warn('API güncelleme hatası (devam ediliyor):', e); }
     d.name = name;
     d.tcNo = tcNo;
     d.phone = phone;
-    saveDocStore('drivers', drivers);
     renderGrid();
-    closeModal('editDriverModal');
-    showToast('Şoför bilgileri güncellendi');
+    closeModal('editDelivererModal');
+    showToast('Teslimatçı bilgileri güncellendi');
 }
 
 function downloadAll(id) {
-    const d = drivers.find(x => x.id === id);
+    const d = deliverers.find(x => x.id === id);
     if (!d) return;
     const uploaded = (d.documents||[]).filter(doc => doc.fileName);
-    if (uploaded.length === 0) { showToast('Bu şoför için yüklü evrak bulunmuyor', 'error'); return; }
+    if (uploaded.length === 0) { showToast('Bu teslimatçı için yüklü evrak bulunmuyor', 'error'); return; }
     showToast('İndirme başlatılıyor...');
-    // TODO: Server-side PDF merge endpoint
 }
 </script>
 

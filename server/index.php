@@ -13,7 +13,17 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 if (session_status() === PHP_SESSION_NONE) {
+    // Session güvenlik ayarları
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+    ini_set('session.cookie_httponly', '1');            // JS ile cookie erişimini engelle
+    ini_set('session.cookie_secure', $isHttps ? '1' : '0'); // HTTPS varsa secure cookie
+    ini_set('session.cookie_samesite', 'Lax');         // CSRF koruması
+    ini_set('session.use_strict_mode', '1');           // Geçersiz session ID'leri reddet
+    ini_set('session.use_only_cookies', '1');          // URL'de session ID kullanma
     session_start();
 }
 
@@ -29,6 +39,20 @@ if (str_starts_with($requestUri, '/api/')) {
         $phpFile = __DIR__ . '/api/' . $apiPath;
         if (is_dir($phpFile)) {
             $phpFile .= '/index.php';
+        }
+    }
+    
+    // Alt yol segmentleri olan istekler için (ör: /api/documents/download/uploads/...)
+    // Sağdan segmentleri kaldırarak PHP dosyasını bul
+    if (!file_exists($phpFile)) {
+        $segments = explode('/', $apiPath);
+        for ($i = count($segments); $i >= 1; $i--) {
+            $tryPath = implode('/', array_slice($segments, 0, $i));
+            $tryFile = __DIR__ . '/api/' . $tryPath . '.php';
+            if (file_exists($tryFile)) {
+                $phpFile = $tryFile;
+                break;
+            }
         }
     }
     
@@ -78,6 +102,9 @@ $routes = [
     '/vehicle-documents/suppliers'   => 'vehicle-documents-suppliers',
     '/vehicle-documents/new'         => 'vehicle-documents-new',
     '/driver-documents'              => 'driver-documents',
+    '/driver-documents/asmira'       => 'driver-documents',
+    '/driver-documents/suppliers'    => 'driver-documents-suppliers',
+    '/delivery-documents'             => 'delivery-documents',
     '/document-package'              => 'document-package',
     '/petitions'                     => 'petitions',
     '/reports'                       => 'reports',

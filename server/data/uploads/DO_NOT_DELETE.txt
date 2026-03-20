@@ -1,0 +1,13 @@
+BU KLASÖRÜ SİLMEYİN / DO NOT DELETE THIS FOLDER
+================================================
+
+Bu klasör (data/uploads/) kullanıcıların yüklediği evrak dosyalarını içerir.
+Sunucuya güncelleme yaparken bu klasörü SİLMEYİN veya ÜZERİNE YAZMAYIN.
+
+Güncelleme yaparken:
+1. Sadece pages/, api/, includes/, assets/ klasörlerini güncelleyin
+2. data/ klasörüne DOKUNMAYIN
+3. logs/ klasörüne DOKUNMAYIN
+
+This folder contains user-uploaded document files.
+DO NOT delete or overwrite this folder during deployments.

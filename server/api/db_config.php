@@ -33,12 +33,14 @@ define('APP_TIMEZONE', 'Europe/Istanbul');
 // ========================
 define('UPLOAD_DIR', __DIR__ . '/../data/uploads');
 define('MAX_UPLOAD_SIZE', 10 * 1024 * 1024); // 10MB
-define('ALLOWED_EXTENSIONS', ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx']);
+define('ALLOWED_EXTENSIONS', ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'tif', 'heic', 'heif', 'svg', 'doc', 'docx', 'xls', 'xlsx']);
 
 // ========================
 // GÜVENLİK AYARLARI
 // ========================
-define('CORS_ALLOWED_ORIGIN', '*');    // Sunucuda kendi domain'inizi yazın: 'https://siteniz.com'
+// CORS: Otomatik protokol algılama (HTTP/HTTPS)
+$_corsProto = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ? 'https' : 'http';
+define('CORS_ALLOWED_ORIGIN', $_corsProto . '://ops.asmiralogistics.com');
 define('PASSWORD_HASH_ENABLED', true); // Şifre hash'leme aktif/pasif
 
 // ========================

@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/../middleware.php';
 setCorsHeaders();
+requireApiAuth();
 
 if (getMethod() !== 'POST') {
     jsonResponse(['error' => 'Method not allowed'], 405);
@@ -27,6 +29,21 @@ if (!isAllowedExtension($file['name'])) {
 // Dosya boyut kontrolü
 if ($file['size'] > MAX_UPLOAD_SIZE) {
     jsonResponse(['error' => 'Dosya boyutu çok büyük. Maks: ' . (MAX_UPLOAD_SIZE / 1024 / 1024) . 'MB'], 400);
+}
+
+// MIME type doğrulaması (uzantı yanıltıcı olabilir)
+$allowedMimes = [
+    'application/pdf',
+    'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp',
+    'image/tiff', 'image/heic', 'image/heif', 'image/svg+xml',
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/octet-stream', // Bazı tarayıcılar bilinmeyen dosyaları böyle gönderir
+];
+$finfo = new finfo(FILEINFO_MIME_TYPE);
+$detectedMime = $finfo->file($file['tmp_name']);
+if (!in_array($detectedMime, $allowedMimes)) {
+    jsonResponse(['error' => 'Dosya içeriği izin verilen türlerle eşleşmiyor. Algılanan: ' . $detectedMime], 400);
 }
 
 // Klasör oluştur
@@ -80,5 +97,5 @@ if ($ownerType === 'driver') {
 jsonResponse(['success' => true, 'fileName' => $file['name'], 'filePath' => $relativePath]);
 
 } catch (Exception $e) {
-    errorResponse($e, 'Dosya yükleme hatası');
+    jsonResponse(['error' => 'Dosya yükleme hatası: ' . $e->getMessage()], 500);
 }
